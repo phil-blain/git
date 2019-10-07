@@ -17,7 +17,7 @@ test_expect_success 'setup' '
 	date >project/first.super
 '
 
-test_expect_failure 'stash in superproject does not touch modified submodule files if submodule.recurse=true' '
+test_expect_success 'stash in superproject does not touch modified submodule files if submodule.recurse=true' '
 	git -C project/submodule status >>expect &&
 	git -C project -c submodule.recurse=true stash &&
 	git -C project/submodule status >>actual &&
