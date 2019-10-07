@@ -1382,8 +1382,8 @@ static int do_push_stash(const struct pathspec *ps, const char *stash_msg, int q
 		} else {
 			struct child_process cp = CHILD_PROCESS_INIT;
 			cp.git_cmd = 1;
-			argv_array_pushl(&cp.args, "reset", "--hard", "-q",
-					 NULL);
+			argv_array_pushl(&cp.args, "reset", "--hard", "--no-recurse-submodules",
+					"-q", NULL);
 			if (run_command(&cp)) {
 				ret = -1;
 				goto done;
