@@ -6,15 +6,12 @@ test_description='checkout can handle submodules'
 . "$TEST_DIRECTORY"/lib-submodule-update.sh
 
 test_expect_success 'setup' '
-	mkdir submodule &&
-	(cd submodule &&
-	 git init &&
-	 test_commit first) &&
-	git add submodule &&
+	test_create_repo submodule &&
+	test_commit -C submodule first &&
+	git submodule add ./submodule &&
 	test_tick &&
 	git commit -m superproject &&
-	(cd submodule &&
-	 test_commit second) &&
+	test_commit -C submodule second &&
 	git add submodule &&
 	test_tick &&
 	git commit -m updated.superproject
@@ -49,18 +46,18 @@ test_expect_success '"checkout <submodule>" honors diff.ignoreSubmodules' '
 
 test_expect_success '"checkout <submodule>" honors submodule.*.ignore from .gitmodules' '
 	git config diff.ignoreSubmodules none &&
-	git config -f .gitmodules submodule.submodule.path submodule &&
 	git config -f .gitmodules submodule.submodule.ignore untracked &&
 	git checkout HEAD >actual 2>&1 &&
-	test_must_be_empty actual
+	echo "M	.gitmodules" >expect &&
+	test_cmp expect actual
 '
 
 test_expect_success '"checkout <submodule>" honors submodule.*.ignore from .git/config' '
 	git config -f .gitmodules submodule.submodule.ignore none &&
-	git config submodule.submodule.path submodule &&
 	git config submodule.submodule.ignore all &&
 	git checkout HEAD >actual 2>&1 &&
-	test_must_be_empty actual
+	echo "M	.gitmodules" >expect &&
+	test_cmp expect actual
 '
 
 KNOWN_FAILURE_DIRECTORY_SUBMODULE_CONFLICTS=1
