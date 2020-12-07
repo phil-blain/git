@@ -54,6 +54,8 @@ matrix:
 
 before_install: ci/install-dependencies.sh
 script: ci/run-build-and-tests.sh
+after_success:
+  - bash <(curl -s https://codecov.io/bash) -v
 after_failure: ci/print-test-failures.sh
 
 notifications:
