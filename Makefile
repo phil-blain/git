@@ -3268,8 +3268,9 @@ coverage-clean-results:
 coverage-clean: coverage-clean-results
 	$(RM) $(addsuffix *.gcno,$(object_dirs))
 
-COVERAGE_CFLAGS = $(CFLAGS) -O0 -ftest-coverage -fprofile-arcs
-COVERAGE_LDFLAGS = $(CFLAGS)  -O0 -lgcov
+COVERAGE_FLAGS = -O0 --coverage
+COVERAGE_CFLAGS = $(CFLAGS) $(COVERAGE_FLAGS)
+COVERAGE_LDFLAGS = $(LDFLAGS) $(COVERAGE_FLAGS)
 GCOVFLAGS = --preserve-paths --branch-probabilities --all-blocks
 
 coverage-compile:
