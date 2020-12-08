@@ -3641,7 +3641,8 @@ quick-install-man:
 quick-install-html:
 	$(MAKE) -C Documentation quick-install-html
 
-
+install-completion:
+	$(MAKE) -C contrib/completion install
 
 ### Maintainer's dist rules
 
