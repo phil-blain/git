@@ -323,7 +323,10 @@ test_expect_failure 'different commit prevents from deleting' '
 	git checkout -f --recurse-submodules delete_submodule
 '
 
+# This "succeeds" because "git checkout --recurse-submodules master" succeeds, ie. the modified submodule
+# commit is carried over to the master branch. This is the same thing that happens in normal checkout
 test_expect_failure '"checkout --recurse-submodules" needs -f to update a modifed submodule commit' '
+	git checkout --recurse-submodules base &&
 	git -C submodule checkout --recurse-submodules HEAD^ &&
 	test_must_fail git checkout --recurse-submodules master &&
 	test_must_fail git diff-files --quiet submodule &&
