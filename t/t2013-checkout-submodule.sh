@@ -6,7 +6,7 @@ test_description='checkout can handle submodules'
 . "$TEST_DIRECTORY"/lib-submodule-update.sh
 
 # NOTE: this sets up an "old-style" submodule, with an embedded '.git' directory
-# might want to change that
+# might want to change that (call absorbgitdirs)
 test_expect_success 'setup' '
 	test_create_repo submodule &&
 	test_commit -C submodule first &&
@@ -41,36 +41,33 @@ test_expect_success '"checkout <submodule>" updates the index only' '
 	git diff-files --quiet
 '
 
-test_expect_success '"checkout HEAD" honors diff.ignoreSubmodules' '
-	git config diff.ignoreSubmodules dirty &&
+test_expect_success '"checkout HEAD" output honors diff.ignoreSubmodules' '
+	test_config diff.ignoreSubmodules dirty &&
+	test_when_finished "rm submodule/untracked" &&
 	echo x> submodule/untracked &&
 	git checkout HEAD >actual 2>&1 &&
-	test_must_be_empty actual &&
-	git config --unset diff.ignoreSubmodules &&
-	rm submodule/untracked
+	test_must_be_empty actual
 '
 
-test_expect_success '"checkout HEAD" honors submodule.*.ignore from .gitmodules' '
-	git config diff.ignoreSubmodules none &&
+test_expect_success '"checkout HEAD" output honors submodule.*.ignore from .gitmodules' '
+	test_config diff.ignoreSubmodules none &&
+	test_when_finished "git config -f .gitmodules --unset submodule.submodule.ignore" &&
 	git config -f .gitmodules submodule.submodule.ignore untracked &&
 	git checkout HEAD >actual 2>&1 &&
 	echo "M	.gitmodules" >expect &&
 	test_cmp expect actual
 '
 
-test_expect_success '"checkout HEAD" honors submodule.*.ignore from .git/config' '
+test_expect_success '"checkout HEAD" output honors submodule.*.ignore from .git/config' '
+	test_when_finished "git config -f .gitmodules --unset submodule.submodule.ignore" &&
 	git config -f .gitmodules submodule.submodule.ignore none &&
-	git config submodule.submodule.ignore all &&
+	test_config submodule.submodule.ignore all &&
 	git checkout HEAD >actual 2>&1 &&
 	echo "M	.gitmodules" >expect &&
 	test_cmp expect actual
 '
 
 test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite unstaged changes in submodules' '
-	# Remove settings/modifs from previous tests
-	git config --unset submodule.submodule.ignore &&
-	git restore .gitmodules &&
-	
 	git checkout -b new &&
 	test_commit -C submodule third &&
 	git add submodule &&
