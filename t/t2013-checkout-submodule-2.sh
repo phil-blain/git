@@ -103,6 +103,7 @@ test_expect_success 'setup the submodule config' '
 '
 
 test_expect_success '"checkout --recurse-submodules" migrates submodule git dir before deleting' '
+	rm submodule/untracked &&
 	git checkout -b base &&
 	git checkout -b delete_submodule &&
 	git update-index --force-remove submodule &&
@@ -112,7 +113,7 @@ test_expect_success '"checkout --recurse-submodules" migrates submodule git dir 
 	git commit -m "submodule deleted" &&
 	git checkout base &&
 	git checkout --recurse-submodules delete_submodule 2>output.err 1>output.out &&
-	test_i18ngrep "Migrating git directory" output.out &&
+	test_i18ngrep "Migrating git directory" output.err &&
 	! test -d submodule
 '
 
