@@ -309,12 +309,16 @@ test_expect_success 'added to index is not deleted' '
 	git checkout -f --recurse-submodules delete_submodule
 '
 
+# This is copy-pasted from above, but the title suggests that a "commit" is missing in the submodule
+# this fails because the first checkout succeeds (i.e. there is no mechanism to prevent garbage collection)
+
 # This is ok in theory, we just need to make sure
 # the garbage collection doesn't eat the commit.
-test_expect_success 'different commit prevents from deleting' '
+test_expect_failure 'different commit prevents from deleting' '
 	git checkout --recurse-submodules base &&
 	echo important >submodule/to_index &&
 	git -C submodule add to_index &&
+	git -C submodule commit -m "new commit" &&
 	test_must_fail git checkout --recurse-submodules delete_submodule &&
 	git checkout -f --recurse-submodules delete_submodule
 '
