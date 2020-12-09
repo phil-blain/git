@@ -66,7 +66,7 @@ test_expect_success '"checkout <submodule>" honors submodule.*.ignore from .gitm
 test_expect_success '"checkout <submodule>" honors submodule.*.ignore from .git/config' '
 	git config -f .gitmodules submodule.submodule.ignore none &&
 	git config submodule.submodule.path submodule &&
-	git config submodule.submodule.ignore all &&
+	test_config submodule.submodule.ignore all &&
 	git checkout HEAD >actual 2>&1 &&
 	! test -s actual
 '
@@ -140,9 +140,11 @@ test_expect_success '"check --recurse-submodules" removes deleted submodule' '
 test_expect_success '"checkout --recurse-submodules" repopulates submodule' '
 	submodule_creation_must_succeed delete_submodule base
 '
-
-test_expect_success 'option checkout.recurseSubmodules updates submodule' '
-	test_config checkout.recurseSubmodules 1 &&
+# This does not work as written because it should use 'submodule.recurse'
+# but without the change to 'test_config' in t2013.6, it still passes!
+test_expect_success 'option submodule.recurse updates submodule' '
+# 	test_config checkout.recurseSubmodules 1 &&
+	test_config submodule.recurse 1 &&
 	git checkout base &&
 	git checkout -b advanced-base &&
 	git -C submodule commit --allow-empty -m "empty commit" &&
