@@ -262,6 +262,9 @@ test_expect_success '"checkout --recurse-submodules" updates the submodule' '
 	git diff-index --quiet --cached HEAD
 '
 
+# Note: this fails because test_must_fail fails (because the checkout succeeds)
+# 'submodule/untracked' is left in the tree after the checkout
+
 # In 293ab15eea34 we considered untracked ignored files in submodules
 # expendable, we may want to revisit this decision by adding user as
 # well as command specific configuration for it.
@@ -272,14 +275,19 @@ test_expect_success '"checkout --recurse-submodules" updates the submodule' '
 # as the checkout command that removes a submodule as well.
 test_expect_failure 'untracked file is not deleted' '
 	git checkout --recurse-submodules base &&
+	test_when_finished "rm submodule/untracked" &&
 	echo important >submodule/untracked &&
 	test_must_fail git checkout --recurse-submodules delete_submodule &&
 	git checkout -f --recurse-submodules delete_submodule
 '
 
+# Note: this test succeeds but 'submodule/ignored' is still in the tree
+# after the checkout
 test_expect_success 'ignored file works just fine' '
 	git checkout --recurse-submodules base &&
+	test_when_finished "rm submodule/ignored" &&
 	echo important >submodule/ignored &&
+	test_when_finished "rm .git/modules/submodule/info/exclude" &&
 	echo ignored >.git/modules/submodule/info/exclude &&
 	git checkout --recurse-submodules delete_submodule
 '
