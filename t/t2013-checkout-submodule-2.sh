@@ -368,6 +368,7 @@ test_expect_failure '"checkout --recurse-submodules" ignores modified submodule 
 	git diff-index --quiet --cached HEAD
 '
 
+# here we get "already on master" after the checkout..
 test_expect_failure '"checkout --recurse-submodules" does not care about untracked submodule content' '
 	echo untracked >submodule/untracked &&
 	git checkout --recurse-submodules master &&
