@@ -350,8 +350,13 @@ test_expect_failure '"checkout --recurse-submodules" needs -f to update modifed 
 	git diff-files --quiet &&
 	git diff-index --quiet --cached HEAD
 '
-
+# Not sure what this is trying to do...
+# Why would submodule/first.t not be changed ?
+# What does it mean?
+# Note that this is marked as "known failure vanished" since the test passes 
+# Also, not sure if git co --r base was forgotten at the beginning or not...
 test_expect_failure '"checkout --recurse-submodules" ignores modified submodule content that would not be changed' '
+# 	git checkout --recurse-submodules base &&
 	echo modified >expected &&
 	cp expected submodule/first.t &&
 	git checkout --recurse-submodules HEAD^ &&
