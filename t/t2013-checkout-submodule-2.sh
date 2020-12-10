@@ -336,6 +336,8 @@ test_expect_failure '"checkout --recurse-submodules" needs -f to update a modife
 	git diff-index --quiet --cached HEAD
 '
 
+# This "succeeds" because "git checkout --recurse-submodules HEAD^" succeeds (current problem)
+# Because of previous test, before that checkout the submodule in in "new commits, untracked content" state
 test_expect_failure '"checkout --recurse-submodules" needs -f to update modifed submodule content' '
 	echo modified >submodule/second.t &&
 	test_must_fail git checkout --recurse-submodules HEAD^ &&
