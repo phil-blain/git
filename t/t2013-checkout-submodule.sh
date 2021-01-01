@@ -66,7 +66,7 @@ test_expect_success '"checkout HEAD" output honors submodule.*.ignore from .git/
 	echo "M	.gitmodules" >expect &&
 	test_cmp expect actual
 '
-
+# "First test"
 test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite unstaged changes in submodules' '
 	git checkout -b new &&
 	test_commit -C submodule third &&
@@ -79,6 +79,7 @@ test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite
 	# TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
 	test_must_fail git checkout --recurse-submodules master
 '
+# "Second test"
 test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite unstaged changes in submodules, even when submodule in <branch> is ahead of HEAD' '
 	# Remove settings/modifs from previous tests
 	git -C submodule checkout -- third.t &&
