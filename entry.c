@@ -225,7 +225,7 @@ int finish_delayed_checkout(struct checkout *state, int *nr_checkouts)
 				ce = index_file_exists(state->istate, path->string,
 						       strlen(path->string), 0);
 				if (ce) {
-					errs |= checkout_entry(ce, state, NULL, nr_checkouts);
+					errs |= checkout_entry(ce, state, NULL, nr_checkouts, NULL);
 					filtered_bytes += ce->ce_stat_data.sd_size;
 					display_throughput(progress, filtered_bytes);
 				} else
@@ -438,7 +438,7 @@ static void mark_colliding_entries(const struct checkout *state,
  * least TEMPORARY_FILENAME_LENGTH bytes long.
  */
 int checkout_entry(struct cache_entry *ce, const struct checkout *state,
-		   char *topath, int *nr_checkouts)
+		   char *topath, int *nr_checkouts, unsigned int *reset)
 {
 	static struct strbuf path = STRBUF_INIT;
 	struct stat st;
@@ -481,10 +481,14 @@ int checkout_entry(struct cache_entry *ce, const struct checkout *state,
 
 				return submodule_move_head(ce->name,
 					NULL, oid_to_hex(&ce->oid), 0);
-			} else
+			} else {
+				int flags = 0;
+				if (reset && *reset)
+					flags = SUBMODULE_MOVE_HEAD_FORCE;
 				return submodule_move_head(ce->name,
 					"HEAD", oid_to_hex(&ce->oid),
-					state->force ? SUBMODULE_MOVE_HEAD_FORCE : 0);
+					flags);
+			}
 		}
 
 		if (!changed)

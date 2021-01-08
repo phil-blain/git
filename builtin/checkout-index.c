@@ -69,7 +69,7 @@ static int checkout_file(const char *name, const char *prefix)
 		did_checkout = 1;
 		if (checkout_entry(ce, &state,
 				   to_tempfile ? topath[ce_stage(ce)] : NULL,
-				   NULL) < 0)
+				   NULL, NULL) < 0)
 			errs++;
 	}
 
@@ -122,7 +122,7 @@ static void checkout_all(const char *prefix, int prefix_length)
 		}
 		if (checkout_entry(ce, &state,
 				   to_tempfile ? topath[ce_stage(ce)] : NULL,
-				   NULL) < 0)
+				   NULL, NULL) < 0)
 			errs++;
 		last_ce = ce;
 	}

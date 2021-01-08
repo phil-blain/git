@@ -216,7 +216,7 @@ static int checkout_stage(int stage, const struct cache_entry *ce, int pos,
 	       !strcmp(active_cache[pos]->name, ce->name)) {
 		if (ce_stage(active_cache[pos]) == stage)
 			return checkout_entry(active_cache[pos], state,
-					      NULL, nr_checkouts);
+					      NULL, nr_checkouts, NULL);
 		pos++;
 	}
 	if (!overlay_mode) {
@@ -293,7 +293,7 @@ static int checkout_merged(int pos, const struct checkout *state, int *nr_checko
 	ce = make_transient_cache_entry(mode, &oid, path, 2);
 	if (!ce)
 		die(_("make_cache_entry failed for path '%s'"), path);
-	status = checkout_entry(ce, state, NULL, nr_checkouts);
+	status = checkout_entry(ce, state, NULL, nr_checkouts, NULL);
 	discard_cache_entry(ce);
 	return status;
 }
@@ -373,7 +373,7 @@ static int checkout_worktree(const struct checkout_opts *opts,
 		if (ce->ce_flags & CE_MATCHED) {
 			if (!ce_stage(ce)) {
 				errs |= checkout_entry(ce, &state,
-						       NULL, &nr_checkouts);
+						       NULL, &nr_checkouts, NULL);
 				continue;
 			}
 			if (opts->writeout_stage)

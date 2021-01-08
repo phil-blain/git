@@ -327,7 +327,7 @@ static void load_gitmodules_file(struct index_state *index,
 			repo_read_gitmodules(the_repository, 0);
 		} else if (state && (ce->ce_flags & CE_UPDATE)) {
 			submodule_free(the_repository);
-			checkout_entry(ce, state, NULL, NULL);
+			checkout_entry(ce, state, NULL, NULL, NULL);
 			repo_read_gitmodules(the_repository, 0);
 		}
 	}
@@ -469,7 +469,7 @@ static int check_updates(struct unpack_trees_options *o,
 				    ce->name);
 			display_progress(progress, ++cnt);
 			ce->ce_flags &= ~CE_UPDATE;
-			errs |= checkout_entry(ce, &state, NULL, NULL);
+			errs |= checkout_entry(ce, &state, NULL, NULL, &o->reset);
 		}
 	}
 	stop_progress(&progress);
@@ -1880,6 +1880,7 @@ static int verify_uptodate_1(const struct cache_entry *ce,
 			// int ignore_untracked = 0;
 			// unsigned r = is_submodule_modified(ce->name, ignore_untracked);
 			int r = check_submodule_move_head(ce,
+				// "HEAD", empty_tree_oid_hex(), o);
 				"HEAD", oid_to_hex(&ce->oid), o);
 			if (r)
 				return add_rejected_path(o, error_type, ce->name);

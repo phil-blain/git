@@ -1632,7 +1632,7 @@ struct checkout {
 #define CHECKOUT_INIT { NULL, "" }
 
 #define TEMPORARY_FILENAME_LENGTH 25
-int checkout_entry(struct cache_entry *ce, const struct checkout *state, char *topath, int *nr_checkouts);
+int checkout_entry(struct cache_entry *ce, const struct checkout *state, char *topath, int *nr_checkouts, unsigned int *reset);
 void enable_delayed_checkout(struct checkout *state);
 int finish_delayed_checkout(struct checkout *state, int *nr_checkouts);
 /*
