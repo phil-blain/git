@@ -323,7 +323,7 @@ test_submodule_switch_common () {
 	else
 		RESULT="success"
 	fi
-	test_expect_$RESULT "$command: added submodule creates empty directory" '
+	test_expect_$RESULT "$prefix: added submodule creates empty directory" '
 		prolog &&
 		reset_work_tree_to no_submodule &&
 		(
@@ -337,7 +337,7 @@ test_submodule_switch_common () {
 		)
 	'
 	# ... and doesn't care if it already exists.
-	test_expect_$RESULT "$command: added submodule leaves existing empty directory alone" '
+	test_expect_$RESULT "$prefix: added submodule leaves existing empty directory alone" '
 		prolog &&
 		reset_work_tree_to no_submodule &&
 		(
@@ -353,7 +353,7 @@ test_submodule_switch_common () {
 	'
 	# Replacing a tracked file with a submodule produces an empty
 	# directory ...
-	test_expect_$RESULT "$command: replace tracked file with submodule creates empty directory" '
+	test_expect_$RESULT "$prefix: replace tracked file with submodule creates empty directory" '
 		prolog &&
 		reset_work_tree_to replace_sub1_with_file &&
 		(
@@ -377,7 +377,7 @@ test_submodule_switch_common () {
 	else
 		RESULT="success"
 	fi
-	test_expect_$RESULT "$command: replace directory with submodule" '
+	test_expect_$RESULT "$prefix: replace directory with submodule" '
 		prolog &&
 		reset_work_tree_to replace_sub1_with_directory &&
 		(
@@ -399,7 +399,7 @@ test_submodule_switch_common () {
 	else
 		RESULT="success"
 	fi
-	test_expect_$RESULT "$command: removed submodule leaves submodule directory and its contents in place" '
+	test_expect_$RESULT "$prefix: removed submodule leaves submodule directory and its contents in place" '
 		prolog &&
 		reset_work_tree_to add_sub1 &&
 		(
@@ -411,7 +411,7 @@ test_submodule_switch_common () {
 		)
 	'
 	# ... especially when it contains a .git directory.
-	test_expect_$RESULT "$command: removed submodule leaves submodule containing a .git directory alone" '
+	test_expect_$RESULT "$prefix: removed submodule leaves submodule containing a .git directory alone" '
 		prolog &&
 		reset_work_tree_to add_sub1 &&
 		(
@@ -440,7 +440,7 @@ test_submodule_switch_common () {
 	else
 		RESULT="success"
 	fi
-	test_expect_$RESULT "$command: replace submodule with a directory must fail" '
+	test_expect_$RESULT "$prefix: replace submodule with a directory must fail" '
 		prolog &&
 		reset_work_tree_to add_sub1 &&
 		(
@@ -452,7 +452,7 @@ test_submodule_switch_common () {
 		)
 	'
 	# ... especially when it contains a .git directory.
-	test_expect_$RESULT "$command: replace submodule containing a .git directory with a directory must fail" '
+	test_expect_$RESULT "$prefix: replace submodule containing a .git directory with a directory must fail" '
 		prolog &&
 		reset_work_tree_to add_sub1 &&
 		(
@@ -467,7 +467,7 @@ test_submodule_switch_common () {
 	'
 	# Replacing it with a file must fail as it could throw away any local
 	# work tree changes ...
-	test_expect_failure "$command: replace submodule with a file must fail" '
+	test_expect_failure "$prefix: replace submodule with a file must fail" '
 		prolog &&
 		reset_work_tree_to add_sub1 &&
 		(
@@ -480,7 +480,7 @@ test_submodule_switch_common () {
 	'
 	# ... or even destroy unpushed parts of submodule history if that
 	# still uses a .git directory.
-	test_expect_failure "$command: replace submodule containing a .git directory with a file must fail" '
+	test_expect_failure "$prefix: replace submodule containing a .git directory with a file must fail" '
 		prolog &&
 		reset_work_tree_to add_sub1 &&
 		(
@@ -505,7 +505,7 @@ test_submodule_switch_common () {
 	else
 		RESULT="success"
 	fi
-	test_expect_$RESULT "$command: modified submodule does not update submodule work tree" '
+	test_expect_$RESULT "$prefix: modified submodule does not update submodule work tree" '
 		prolog &&
 		reset_work_tree_to add_sub1 &&
 		(
@@ -520,7 +520,7 @@ test_submodule_switch_common () {
 	'
 	# Updating a submodule to an invalid sha1 doesn't update the
 	# submodule's work tree, subsequent update will fail
-	test_expect_$RESULT "$command: modified submodule does not update submodule work tree to invalid commit" '
+	test_expect_$RESULT "$prefix: modified submodule does not update submodule work tree to invalid commit" '
 		prolog &&
 		reset_work_tree_to add_sub1 &&
 		(
@@ -535,7 +535,7 @@ test_submodule_switch_common () {
 	'
 	# Updating a submodule from an invalid sha1 doesn't update the
 	# submodule's work tree, subsequent update will succeed
-	test_expect_$RESULT "$command: modified submodule does not update submodule work tree from invalid commit" '
+	test_expect_$RESULT "$prefix: modified submodule does not update submodule work tree from invalid commit" '
 		prolog &&
 		reset_work_tree_to invalid_sub1 &&
 		(
@@ -585,11 +585,12 @@ test_submodule_switch_common () {
 # test_submodule_switch_func "my_func"
 test_submodule_switch_func () {
 	command="$1"
+	test -z "$prefix" && prefix="$command"
 	test_submodule_switch_common "$command"
 
 	# An empty directory does not prevent the creation of a submodule of
 	# the same name, but a file does.
-	test_expect_success "$command: added submodule doesn't remove untracked unignored file with same name" '
+	test_expect_success "$prefix: added submodule doesn't remove untracked unignored file with same name" '
 		prolog &&
 		reset_work_tree_to no_submodule &&
 		(
@@ -601,6 +602,8 @@ test_submodule_switch_func () {
 			test_must_be_empty sub1
 		)
 	'
+
+	unset prefix
 }
 
 # Ensures that the that the arg either contains "test_must_fail" or is empty.
@@ -615,6 +618,7 @@ git_test_func () {
 
 test_submodule_switch () {
 	gitcmd="$1"
+	prefix="$1"
 	test_submodule_switch_func "git_test_func"
 }
 
@@ -622,13 +626,14 @@ test_submodule_switch () {
 # the superproject is allowed.
 test_submodule_forced_switch () {
 	gitcmd="$1"
+	prefix="$gitcmd"
 	command="git_test_func"
 	KNOWN_FAILURE_FORCED_SWITCH_TESTS=1
 	test_submodule_switch_common "$command"
 
 	# When forced, a file in the superproject does not prevent creating a
 	# submodule of the same name.
-	test_expect_success "$command: added submodule does remove untracked unignored file with same name when forced" '
+	test_expect_success "$prefix: added submodule does remove untracked unignored file with same name when forced" '
 		prolog &&
 		reset_work_tree_to no_submodule &&
 		(
@@ -944,7 +949,7 @@ test_submodule_switch_recursing_with_args () {
 	'
 
 	# ... and ignored files are ignored
-	test_expect_success "$command: replace submodule with a file works ignores ignored files in submodule" '
+	test_expect_success "$command: replace submodule with a file ignores ignored files in submodule" '
 		test_when_finished "rm submodule_update/.git/modules/sub1/info/exclude" &&
 		prolog &&
 		reset_work_tree_to_interested add_sub1 &&
