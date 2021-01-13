@@ -1883,7 +1883,10 @@ static int verify_uptodate_1(const struct cache_entry *ce,
 				// "HEAD", empty_tree_oid_hex(), o);
 				"HEAD", oid_to_hex(&ce->oid), o);
 			if (r)
-				return add_rejected_path(o, error_type, ce->name);
+				/* ERROR_WOULD_LOSE_SUBMODULE already added by
+				check_submodule_move_head, no need to show a
+				second error */
+				return r;
 			return 0;
 		}
 
