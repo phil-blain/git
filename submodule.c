@@ -1971,7 +1971,8 @@ int submodule_move_head(const char *path,
 	strvec_push(&cp.args, new_head ? new_head : empty_tree_oid_hex());
 
 	if (run_command(&cp)) {
-		ret = error(_("Submodule '%s' could not be updated."), path);
+		ret = (flags & SUBMODULE_MOVE_HEAD_QUIET) ? -1 :
+			error(_("Submodule '%s' could not be updated."), path);
 		goto out;
 	}
 

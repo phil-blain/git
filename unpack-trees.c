@@ -294,6 +294,7 @@ static int check_submodule_move_head(const struct cache_entry *ce,
 				     struct unpack_trees_options *o)
 {
 	unsigned flags = SUBMODULE_MOVE_HEAD_DRY_RUN;
+	flags |= SUBMODULE_MOVE_HEAD_QUIET;
 	const struct submodule *sub = submodule_from_ce(ce);
 
 	if (!sub)
