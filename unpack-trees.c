@@ -1872,17 +1872,8 @@ static int verify_uptodate_1(const struct cache_entry *ce,
 		unsigned changed = ie_match_stat(o->src_index, ce, &st, flags);
 
 		if (submodule_from_ce(ce)) {
-			// calling is_submodule_modified instead of check_submodule_move_head is not what we want, as then ERROR_WOULD_LOSE_SUBMODULE is not shown, we just get
-			// error: Your local changes to the following files would be overwritten by checkout:
-			// submodule
-			// Please commit your changes or stash them before you switch branches.
-			// Aborting
-
-			// int ignore_untracked = 0;
-			// unsigned r = is_submodule_modified(ce->name, ignore_untracked);
 			int r = check_submodule_move_head(ce,
-				// "HEAD", empty_tree_oid_hex(), o);
-				"HEAD", oid_to_hex(&ce->oid), o);
+				"HEAD", empty_tree_oid_hex(), o);
 			if (r)
 				/* ERROR_WOULD_LOSE_SUBMODULE already added by
 				check_submodule_move_head, no need to show a
