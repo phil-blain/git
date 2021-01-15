@@ -107,6 +107,7 @@ void setup_unpack_trees_porcelain(struct unpack_trees_options *opts,
 	const char *msg;
 
 	strvec_init(&opts->msgs_to_free);
+	opts->porcelain = cmd;
 
 	if (!strcmp(cmd, "checkout"))
 		msg = advice_commit_before_merge
