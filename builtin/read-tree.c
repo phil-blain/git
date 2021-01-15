@@ -155,6 +155,8 @@ int cmd_read_tree(int argc, const char **argv, const char *cmd_prefix)
 			    "checkout", "control recursive updating of submodules",
 			    PARSE_OPT_OPTARG, option_parse_recurse_submodules_worktree_updater),
 		OPT__QUIET(&opts.quiet, N_("suppress feedback messages")),
+		OPT_STRING(0, "porcelain", &opts.porcelain, N_("command"),
+			   N_("use error messages of <command> instead of plumbing output")),
 		OPT_END()
 	};
 
@@ -240,6 +242,9 @@ int cmd_read_tree(int argc, const char **argv, const char *cmd_prefix)
 
 	if (opts.debug_unpack)
 		opts.fn = debug_merge;
+
+	if (opts.porcelain)
+		setup_unpack_trees_porcelain(&opts, opts.porcelain);
 
 	cache_tree_free(&active_cache_tree);
 	for (i = 0; i < nr_trees; i++) {
