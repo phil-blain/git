@@ -146,7 +146,7 @@ test_expect_success '"check --recurse-submodules" removes deleted submodule' '
 
 	# Check if the checkout deletes the submodule.
 	echo change >>submodule/first.t &&
-# 	test_must_fail git checkout --recurse-submodules delete_submodule &&
+	test_must_fail git checkout --recurse-submodules delete_submodule &&
 	git checkout -f --recurse-submodules delete_submodule &&
 	git diff-files --quiet &&
 	git diff-index --quiet --cached delete_submodule &&

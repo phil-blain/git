@@ -8,15 +8,19 @@ test_description='checkout can handle submodules'
 # NOTE: this sets up an "old-style" submodule, with an embedded '.git' directory
 # might want to change that (call absorbgitdirs)
 test_expect_success 'setup' '
+	test_commit initial &&
+	test_commit second &&
 	test_create_repo submodule &&
 	test_commit -C submodule first &&
 	git submodule add ./submodule &&
 	test_tick &&
 	git commit -m superproject &&
+	git tag third &&
 	test_commit -C submodule second &&
 	git add submodule &&
 	test_tick &&
-	git commit -m updated.superproject
+	git commit -m updated.superproject &&
+	git tag fourth
 '
 
 # TODO: think about moving this test to t7112, and leveraging
@@ -66,6 +70,18 @@ test_expect_success '"checkout HEAD" output honors submodule.*.ignore from .git/
 	echo "M	.gitmodules" >expect &&
 	test_cmp expect actual
 '
+
+# test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite unstaged changes in submodules' '
+# 	test_when_finished "git reset --hard --recurse-submodules fourth && git clean -dff" &&
+# 	git checkout first &&
+# 	git submodule add ./submodule &&
+# 	echo modif >submodule/second.t &&
+# # 	git -C submodule add third.t && # different error
+# # 	TERM=xterm-256color HOME=/Users/Philippe test_pause &&
+# 	# TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
+# 	test_must_fail git checkout --recurse-submodules master
+# '
+
 # "First test"
 test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite unstaged changes in submodules' '
 	git checkout -b new &&
@@ -73,17 +89,15 @@ test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite
 	git add submodule &&
 	test_tick &&
 	git commit -m third.superproject &&
+	test_when_finished "git -C submodule checkout -- third.t" &&
 	echo modif >submodule/third.t &&
 # 	git -C submodule add third.t && # different error
-# 	TERM=xterm-256color HOME=/Users/Philippe test_pause &&
+	TERM=xterm-256color HOME=/Users/Philippe test_pause &&
 	# TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
 	test_must_fail git checkout --recurse-submodules master
 '
 # "Second test"
 test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite unstaged changes in submodules, even when submodule in <branch> is ahead of HEAD' '
-	# Remove settings/modifs from previous tests
-	git -C submodule checkout -- third.t &&
-	
 # 	git clone --recurse-submodules . clone &&
 	
 	git checkout -b rewind &&
@@ -96,7 +110,7 @@ test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite
 	echo modif >submodule/first.t &&
 # 	git -C submodule add first.t && # changes nothing
 	# TERM=xterm-256color HOME=/Users/Philippe test_pause &&
-	TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
+	# TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
 	test_must_fail git checkout --recurse-submodules master
 '
 
@@ -126,14 +140,14 @@ test_expect_success 'second bug report' '
 	test_must_fail git checkout --recurse-submodules master
 	)
 '
-# 
-# KNOWN_FAILURE_DIRECTORY_SUBMODULE_CONFLICTS=1
-# test_submodule_switch_recursing_with_args "checkout"
-# 
-# test_submodule_forced_switch_recursing_with_args "checkout -f"
-# 
-# test_submodule_switch "checkout"
-# 
-# test_submodule_forced_switch "checkout -f"
+
+KNOWN_FAILURE_DIRECTORY_SUBMODULE_CONFLICTS=1
+test_submodule_switch_recursing_with_args "checkout"
+
+test_submodule_forced_switch_recursing_with_args "checkout -f"
+
+test_submodule_switch "checkout"
+echo ALLO
+test_submodule_forced_switch "checkout -f"
 
 test_done
