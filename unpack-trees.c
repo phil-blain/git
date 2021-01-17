@@ -259,7 +259,7 @@ static void display_error_msgs(struct unpack_trees_options *o)
 		}
 		string_list_clear(rejects, 0);
 	}
-	if (error_displayed)
+	if (error_displayed && ! get_super_prefix())
 		fprintf(stderr, _("Aborting\n"));
 }
 
