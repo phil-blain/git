@@ -1888,6 +1888,7 @@ static void submodule_reset_index(const char *path)
 int submodule_move_head(const char *path,
 			 const char *old_head,
 			 const char *new_head,
+			 const char *porcelain,
 			 unsigned flags)
 {
 	int ret = 0;
@@ -1954,6 +1955,9 @@ int submodule_move_head(const char *path,
 	strvec_pushf(&cp.args, "--super-prefix=%s%s/",
 		     get_super_prefix_or_empty(), path);
 	strvec_pushl(&cp.args, "read-tree", "--recurse-submodules", NULL);
+
+	if (porcelain)
+		strvec_pushl(&cp.args, "--porcelain", porcelain, NULL);
 
 	if (flags & SUBMODULE_MOVE_HEAD_DRY_RUN)
 		strvec_push(&cp.args, "-n");

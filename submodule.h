@@ -135,6 +135,7 @@ int validate_submodule_git_dir(char *git_dir, const char *submodule_name);
 int submodule_move_head(const char *path,
 			const char *old,
 			const char *new_head,
+			const char *porcelain,
 			unsigned flags);
 
 void submodule_unset_core_worktree(const struct submodule *sub);

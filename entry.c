@@ -360,7 +360,7 @@ static int write_entry(struct cache_entry *ce,
 		sub = submodule_from_ce(ce);
 		if (sub)
 			return submodule_move_head(ce->name,
-				NULL, oid_to_hex(&ce->oid),
+				NULL, oid_to_hex(&ce->oid), NULL,
 				state->force ? SUBMODULE_MOVE_HEAD_FORCE : 0);
 		break;
 
@@ -480,14 +480,14 @@ int checkout_entry(struct cache_entry *ce, const struct checkout *state,
 					unlink_or_warn(ce->name);
 
 				return submodule_move_head(ce->name,
-					NULL, oid_to_hex(&ce->oid), 0);
+					NULL, oid_to_hex(&ce->oid), NULL, 0);
 			} else {
 				int flags = 0;
 				if (reset && *reset)
 					flags = SUBMODULE_MOVE_HEAD_FORCE;
 				return submodule_move_head(ce->name,
 					"HEAD", oid_to_hex(&ce->oid),
-					flags);
+					NULL, flags);
 			}
 		}
 
@@ -531,7 +531,7 @@ void unlink_entry(const struct cache_entry *ce)
 	const struct submodule *sub = submodule_from_ce(ce);
 	if (sub) {
 		/* state.force is set at the caller. */
-		submodule_move_head(ce->name, "HEAD", NULL,
+		submodule_move_head(ce->name, "HEAD", NULL, NULL,
 				    SUBMODULE_MOVE_HEAD_FORCE);
 	}
 	if (!check_leading_path(ce->name, ce_namelen(ce)))
