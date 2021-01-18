@@ -92,7 +92,7 @@ test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite
 	test_when_finished "git -C submodule checkout -- third.t" &&
 	echo modif >submodule/third.t &&
 # 	git -C submodule add third.t && # different error
-	TERM=xterm-256color HOME=/Users/Philippe test_pause &&
+	# TERM=xterm-256color HOME=/Users/Philippe test_pause &&
 	# TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
 	test_must_fail git checkout --recurse-submodules master
 '
@@ -147,7 +147,7 @@ test_submodule_switch_recursing_with_args "checkout"
 test_submodule_forced_switch_recursing_with_args "checkout -f"
 
 test_submodule_switch "checkout"
-echo ALLO
+
 test_submodule_forced_switch "checkout -f"
 
 test_done
