@@ -10,7 +10,7 @@ windows*) cmd //c mklink //j t\\.prove "$(cygpath -aw "$cache_dir/.prove")";;
 *) ln -s "$cache_dir/.prove" t/.prove;;
 esac
 
-make coverage-compile -j8 -O
+make coverage-compile -j8
 case "$jobname" in
 linux-gcc)
 	make coverage-prove -j8 -O
@@ -36,7 +36,7 @@ linux-gcc-4.8)
 	# constructs that newer compilers seem to quietly accept.
 	;;
 *)
-	make coverage-prove -j8 -O
+	make coverage-prove -j8
 	;;
 esac
 
