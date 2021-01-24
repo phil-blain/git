@@ -10,10 +10,10 @@ windows*) cmd //c mklink //j t\\.prove "$(cygpath -aw "$cache_dir/.prove")";;
 *) ln -s "$cache_dir/.prove" t/.prove;;
 esac
 
-make coverage-compile
+make coverage-compile -j8
 case "$jobname" in
 linux-gcc)
-	make coverage-test
+	make coverage-test -j8
 	export GIT_TEST_SPLIT_INDEX=yes
 	export GIT_TEST_FULL_IN_PACK_ARRAY=true
 	export GIT_TEST_OE_SIZE=10
@@ -22,13 +22,13 @@ linux-gcc)
 	export GIT_TEST_COMMIT_GRAPH_CHANGED_PATHS=1
 	export GIT_TEST_MULTI_PACK_INDEX=1
 	export GIT_TEST_ADD_I_USE_BUILTIN=1
-	make coverage-test
+	make coverage-test -j8
 	;;
 linux-clang)
 	export GIT_TEST_DEFAULT_HASH=sha1
-	make coverage-test
+	make coverage-test -j8
 	export GIT_TEST_DEFAULT_HASH=sha256
-	make coverage-test
+	make coverage-test -j8
 	;;
 linux-gcc-4.8)
 	# Don't run the tests; we only care about whether Git can be
@@ -36,7 +36,7 @@ linux-gcc-4.8)
 	# constructs that newer compilers seem to quietly accept.
 	;;
 *)
-	make coverage-test
+	make coverage-test -j8
 	;;
 esac
 
