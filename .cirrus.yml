@@ -5,11 +5,12 @@ freebsd_12_task:
   freebsd_instance:
     image: freebsd-12-1-release-amd64
   install_script:
-    pkg install -y gettext gmake perl5
+    pkg install -y tmate
   create_user_script:
     - pw useradd git
     - chown -R git:git .
-  build_script:
-    - su git -c gmake
   test_script:
-    - su git -c 'gmake test'
+    - tmate -S /tmp/tmate.sock new-session -d
+    - tmate -S /tmp/tmate.sock wait tmate-ready
+    - echo "session ready!"
+    - bash -c "while [ true ] ; do tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'; sleep 5; done "
