@@ -34,6 +34,7 @@
 #endif
 
 static int diff_detect_rename_default;
+static int diff_find_copies_harder_default;
 static int diff_indent_heuristic = 1;
 static int diff_rename_limit_default = 400;
 static int diff_suppress_blank_empty;
@@ -191,6 +192,10 @@ int git_config_rename(const char *var, const char *value)
 		return DIFF_DETECT_RENAME;
 	if (!strcasecmp(value, "copies") || !strcasecmp(value, "copy"))
 		return  DIFF_DETECT_COPY;
+	if (!strcasecmp(value, "copiesHarder")) {
+		diff_find_copies_harder_default = 1;
+		return DIFF_DETECT_COPY;
+	}
 	return git_config_bool(var,value) ? DIFF_DETECT_RENAME : 0;
 }
 
@@ -4589,6 +4594,7 @@ void repo_diff_setup(struct repository *r, struct diff_options *options)
 	options->add_remove = diff_addremove;
 	options->use_color = diff_use_color_default;
 	options->detect_rename = diff_detect_rename_default;
+	options->flags.find_copies_harder = diff_find_copies_harder_default;
 	options->xdl_opts |= diff_algorithm;
 	if (diff_indent_heuristic)
 		DIFF_XDL_SET(options, INDENT_HEURISTIC);
