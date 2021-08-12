@@ -59,4 +59,30 @@ test_expect_success 'rebase interactive ignores modified submodules' '
 	git -C super rebase -i HEAD^^
 '
 
+test_expect_failure 'rebase across addition of new submodule' '
+	git init sub &&
+	test_commit -C sub ini &&
+	git init super &&
+	test_config -C super submodule.recurse true &&
+	test_commit -C super ini &&
+	git -C super submodule add ../sub &&
+	test_commit -C super base &&
+	test_commit -C super/sub sub1 &&
+	git -C super add sub &&
+	test_commit -C super sub1 &&
+	test_commit -C super/sub sub2 &&
+	git -C super add sub &&
+	test_commit -C super sub2 &&
+	# test_pause &&
+	set_fake_editor &&
+	# THIS WORKS (because it firsts checks out "base")
+	# git -C super rebase -i --onto base sub1  &&
+	# THIS FAILS (modify/delete), says sub2 is left in tree, but it is gone (no .git)
+	# test_must_fail git -C super rebase -i --onto ini sub1
+	# THIS results in "commits don''t follow merge base" and sub/.git is gone
+	FAKE_LINES="edit 1 drop 2 3" git -C super rebase -i --onto ini ini &&
+	test_must_fail git -C super rebase --continue &&
+	ls super/sub/.git
+'
+
 test_done
