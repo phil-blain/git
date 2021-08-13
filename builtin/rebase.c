@@ -29,6 +29,7 @@
 #include "rerere.h"
 #include "branch.h"
 #include "sequencer.h"
+#include "submodule.h"
 #include "rebase-interactive.h"
 #include "reset.h"
 #include "trace2.h"
@@ -805,6 +806,9 @@ static int rebase_config(const char *var, const char *value,
 	if (!strcmp(var, "rebase.backend")) {
 		return git_config_string(&opts->default_backend, var, value);
 	}
+
+	if (!strcmp(var, "submodule.recurse"))
+		return git_default_submodule_config(var, value, data);
 
 	return git_default_config(var, value, ctx, data);
 }
