@@ -21,7 +21,7 @@ if test -z "$TEST_DIRECTORY"
 then
 	# ensure that TEST_DIRECTORY is an absolute path so that it
 	# is valid even if the current working directory is changed
-	TEST_DIRECTORY=$(pwd)
+	TEST_DIRECTORY=$(pwd -P)
 else
 	# The TEST_DIRECTORY will always be the path to the "t"
 	# directory in the git.git checkout. This is overridden by
@@ -33,7 +33,7 @@ else
 	# hard assumptions about "$GIT_BUILD_DIR/t" existing and being
 	# the "$TEST_DIRECTORY", and e.g. "$TEST_DIRECTORY/helper"
 	# needing to exist.
-	TEST_DIRECTORY=$(cd "$TEST_DIRECTORY" && pwd) || exit 1
+	TEST_DIRECTORY=$(cd "$TEST_DIRECTORY" && pwd -P) || exit 1
 fi
 if test -z "$TEST_OUTPUT_DIRECTORY"
 then
