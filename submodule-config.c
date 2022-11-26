@@ -542,8 +542,8 @@ static int gitmodule_oid_from_commit(const struct object_id *treeish_name,
 }
 
 /* This does a lookup of a submodule configuration by name or by path
- * (key) with on-demand reading of the appropriate .gitmodules from
- * revisions.
+ * (key) from revision treeish_name (with on-demand reading of the appropriate .gitmodules),
+ * or from the worktree, the index or HEAD, in that order, if commit_or_tree == null_oid().
  */
 static const struct submodule *config_from(struct submodule_cache *cache,
 		const struct object_id *treeish_name, const char *key,
@@ -633,8 +633,8 @@ static void submodule_cache_check_init(struct repository *repo)
  * not be used as a mechanism to retrieve arbitrary configuration stored in
  * the repository.
  *
- * Runs the provided config function on the '.gitmodules' file found in the
- * working directory.
+ * Runs the provided config function on the '.gitmodules' file found either in the
+ * working directory, in the index or at HEAD, in that order.
  */
 static void config_from_gitmodules(config_fn_t fn, struct repository *repo, void *data)
 {
@@ -715,7 +715,7 @@ void gitmodules_config_oid(const struct object_id *commit_oid)
 
 const struct submodule *submodule_from_name(struct repository *r,
 					    const struct object_id *treeish_name,
-		const char *name)
+					    const char *name)
 {
 	repo_read_gitmodules(r, 1);
 	return config_from(r->submodule_cache, treeish_name, name, lookup_name);
@@ -723,7 +723,7 @@ const struct submodule *submodule_from_name(struct repository *r,
 
 const struct submodule *submodule_from_path(struct repository *r,
 					    const struct object_id *treeish_name,
-		const char *path)
+					    const char *path)
 {
 	repo_read_gitmodules(r, 1);
 	return config_from(r->submodule_cache, treeish_name, path, lookup_path);

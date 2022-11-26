@@ -58,6 +58,11 @@ int option_fetch_parse_recurse_submodules(const struct option *opt,
 					  const char *arg, int unset);
 int parse_update_recurse_submodules_arg(const char *opt, const char *arg);
 int parse_push_recurse_submodules_arg(const char *opt, const char *arg);
+/**
+ * Initialize repo->submodule_cache and populate it with the submodules
+ * recorded in .gitmodules either in the worktree, in the index or at HEAD
+ * (in that order). Do nothing if skip_is_read is true and .gitmodules was already read.
+ */
 void repo_read_gitmodules(struct repository *repo, int skip_if_read);
 void gitmodules_config_oid(const struct object_id *commit_oid);
 
@@ -70,7 +75,8 @@ const struct submodule *submodule_from_name(struct repository *r,
 
 /**
  * Given a tree-ish in the superproject and a path, return the submodule that
- * is bound at the path in the named tree.
+ * is bound at the path in the named tree, or in the worktree, the index or HEAD,
+ * in that order, if commit_or_tree == null_oid()
  */
 const struct submodule *submodule_from_path(struct repository *r,
 					    const struct object_id *commit_or_tree,
