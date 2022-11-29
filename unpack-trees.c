@@ -53,6 +53,9 @@ static const char *unpack_plumbing_errors[NB_UNPACK_TREES_WARNING_TYPES] = {
 	/* ERROR_WOULD_LOSE_SUBMODULE */
 	"Submodule '%s' cannot checkout new HEAD.",
 
+	/* ERROR_MISSING_SUBMODULE */
+	"Submodule '%s' is not yet cloned.",
+
 	/* NB_UNPACK_TREES_ERROR_TYPES; just a meta value */
 	"",
 
@@ -183,6 +186,14 @@ void setup_unpack_trees_porcelain(struct unpack_trees_options *opts,
 
 	msgs[ERROR_WOULD_LOSE_SUBMODULE] =
 		_("Cannot update submodule:\n%s");
+
+	msg = advice_enabled(ADVICE_SUBMODULES_NOT_UPDATED)
+	      ? _("The following submodules are not yet cloned:\n%%s"
+		  "You may try updating the submodules by repeating the failed operation with '--no-recurse-submodules'"
+		  "(or 'git -c submodule.recurse=no ...') and then running 'git -c submodule.recurse=no submodule update --init --recursive'")
+	      : _("The following submodules are not yet cloned:\n%%s");
+	msgs[ERROR_MISSING_SUBMODULE] =
+		strvec_pushf(&opts->msgs_to_free, msg, opts->meta.treeish);
 
 	msgs[WARNING_SPARSE_NOT_UPTODATE_FILE] =
 		_("The following paths are not up to date and were left despite sparse patterns:\n%s");
