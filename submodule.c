@@ -752,13 +752,18 @@ int should_update_submodules(void)
 
 const struct submodule *submodule_from_ce(const struct cache_entry *ce)
 {
+	return tree_submodule_from_ce(ce, null_oid());
+}
+
+const struct submodule *tree_submodule_from_ce(const struct cache_entry *ce, const struct object_id *treeish_name)
+{
 	if (!S_ISGITLINK(ce->ce_mode))
 		return NULL;
 
 	if (!should_update_submodules())
 		return NULL;
 
-	return submodule_from_path(the_repository, null_oid(), ce->name);
+	return submodule_from_path(the_repository, treeish_name, ce->name);
 }
 
 
