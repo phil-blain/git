@@ -2529,6 +2529,16 @@ static int merged_entry(const struct cache_entry *ce,
 {
 	int update = CE_UPDATE;
 	struct cache_entry *merge = dup_cache_entry(ce, &o->result);
+	const struct submodule *sub = tree_submodule_from_ce(ce, &o->meta.treeish);
+	struct strbuf sub_gitdir = STRBUF_INIT;
+	int sub_is_cloned = 0;
+
+	/* We want to recursively check out sub; check if it is cloned */
+	if (sub) {
+		submodule_name_to_gitdir(&sub_gitdir, the_repository, sub->name);
+		sub_is_cloned = is_git_directory(sub_gitdir.buf);
+		strbuf_release(&sub_gitdir);
+	}
 
 	if (!old) {
 		/*
@@ -2559,6 +2569,8 @@ static int merged_entry(const struct cache_entry *ce,
 							    o);
 			if (ret)
 				return ret;
+		} else if (sub && !sub_is_cloned) {
+			return add_rejected_path(o, ERROR_MISSING_SUBMODULE, ce->name);
 		}
 
 	} else if (!(old->ce_flags & CE_CONFLICTED)) {
@@ -2588,6 +2600,8 @@ static int merged_entry(const struct cache_entry *ce,
 							    o);
 			if (ret)
 				return ret;
+		} else if (sub && !sub_is_cloned) {
+			return add_rejected_path(o, ERROR_MISSING_SUBMODULE, ce->name);
 		}
 	} else {
 		/*
