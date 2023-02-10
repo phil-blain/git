@@ -83,10 +83,17 @@ void show_submodule_inline_diff(struct diff_options *o, const char *path,
 /* Check if we want to update any submodule.*/
 int should_update_submodules(void);
 /*
- * Returns the submodule struct if the given ce entry is a submodule
- * and it should be updated. Returns NULL otherwise.
+ * Returns the submodule struct if the given ce entry is a submodule,
+ * is present in the worktree's .gitmodules and it should be updated.
+ * Returns NULL otherwise.
  */
 const struct submodule *submodule_from_ce(const struct cache_entry *ce);
+/*
+ * Returns the submodule struct if the given ce entry is a submodule,
+ * is present in treeish_name's .gitmodules and it should be updated.
+ * Returns NULL otherwise.
+ */
+const struct submodule *tree_submodule_from_ce(const struct cache_entry *ce, const struct object_id *treeish_name);
 void check_for_new_submodule_commits(struct object_id *oid);
 int fetch_submodules(struct repository *r,
 		     const struct strvec *options,
