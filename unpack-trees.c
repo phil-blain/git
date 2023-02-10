@@ -63,6 +63,9 @@ static const char *unpack_plumbing_errors[NB_UNPACK_TREES_WARNING_TYPES] = {
 	/* ERROR_WOULD_LOSE_SUBMODULE */
 	"Submodule '%s' cannot checkout new HEAD.",
 
+	/* ERROR_MISSING_SUBMODULE */
+	"Submodule '%s' is not yet cloned.",
+
 	/* NB_UNPACK_TREES_ERROR_TYPES; just a meta value */
 	"",
 
@@ -192,6 +195,14 @@ void setup_unpack_trees_porcelain(struct unpack_trees_options *opts,
 
 	msgs[ERROR_WOULD_LOSE_SUBMODULE] =
 		_("Cannot update submodule:\n%s");
+
+	msg = advice_enabled(ADVICE_SUBMODULES_NOT_UPDATED)
+	      ? _("The following submodules are not yet cloned:\n%%s"
+		  "You may try updating the submodules by repeating the failed operation with '--no-recurse-submodules'"
+		  "(or 'git -c submodule.recurse=no ...') and then running 'git -c submodule.recurse=no submodule update --init --recursive'")
+	      : _("The following submodules are not yet cloned:\n%%s");
+	msgs[ERROR_MISSING_SUBMODULE] =
+		strvec_pushf(&opts->internal.msgs_to_free, msg, opts->meta.treeish);
 
 	msgs[WARNING_SPARSE_NOT_UPTODATE_FILE] =
 		_("The following paths are not up to date and were left despite sparse patterns:\n%s");
@@ -2552,6 +2563,16 @@ static int merged_entry(const struct cache_entry *ce,
 {
 	int update = CE_UPDATE;
 	struct cache_entry *merge = dup_cache_entry(ce, &o->internal.result);
+	const struct submodule *sub = tree_submodule_from_ce(ce, &o->meta.treeish);
+	struct strbuf sub_gitdir = STRBUF_INIT;
+	int sub_is_cloned = 0;
+
+	/* We want to recursively check out sub; check if it is cloned */
+	if (sub) {
+		submodule_name_to_gitdir(&sub_gitdir, the_repository, sub->name);
+		sub_is_cloned = is_git_directory(sub_gitdir.buf);
+		strbuf_release(&sub_gitdir);
+	}
 
 	if (!old) {
 		/*
@@ -2582,6 +2603,8 @@ static int merged_entry(const struct cache_entry *ce,
 							    o);
 			if (ret)
 				return ret;
+		} else if (sub && !sub_is_cloned) {
+			return add_rejected_path(o, ERROR_MISSING_SUBMODULE, ce->name);
 		}
 
 	} else if (!(old->ce_flags & CE_CONFLICTED)) {
@@ -2611,6 +2634,8 @@ static int merged_entry(const struct cache_entry *ce,
 							    o);
 			if (ret)
 				return ret;
+		} else if (sub && !sub_is_cloned) {
+			return add_rejected_path(o, ERROR_MISSING_SUBMODULE, ce->name);
 		}
 	} else {
 		/*
