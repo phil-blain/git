@@ -72,4 +72,39 @@ test_submodule_switch "checkout"
 
 test_submodule_forced_switch "checkout -f"
 
+test_expect_success 'checkout --recurse-submodules fails cleanly if submodules are missing - setup' '
+	test_config_global protocol.file.allow always &&
+	git init project &&
+	test_commit -C project first &&
+	git init sub &&
+	test_commit -C sub sub-first &&
+	git -C project submodule add ../sub sub &&
+	git -C project commit -m "add sub" &&
+	git -C project tag added &&
+	git -C project rm sub &&
+	git -C project commit -m "remove sub" &&
+	git -C project tag removed &&
+	test_commit -C project replace-w-file sub content replaced-w-file &&
+	git clone --recurse-submodules -b removed project clone
+'
+
+test_checkout_recurse_from_tag () {
+	local tag="$1" &&
+	git -C clone checkout -q "$tag" &&
+	test_must_fail git -C clone checkout --recurse-submodules added 2>actual &&
+	echo "fatal: not a git repository: ../.git/modules/sub" >not-expected &&
+	echo "fatal: could not reset submodule index" >>not-expected &&
+	! test_cmp not-expected actual &&
+	echo "The following submodules are not yet cloned" >expected &&
+	test_path_is_missing clone/sub/ &&
+	test_path_is_missing clone/.git/modules/sub/
+}
+
+test_expect_success 'checkout --recurse-submodules fails cleanly if submodules are missing - none to sub' '
+	test_checkout_recurse_from_tag removed
+'
+test_expect_success 'checkout --recurse-submodules fails cleanly if submodules are missing - file to sub' '
+	test_checkout_recurse_from_tag replaced-w-file
+'
+
 test_done
