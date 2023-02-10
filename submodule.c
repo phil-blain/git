@@ -763,6 +763,9 @@ const struct submodule *tree_submodule_from_ce(const struct cache_entry *ce, con
 	if (!should_update_submodules())
 		return NULL;
 
+	if (!is_tree_submodule_active(the_repository, treeish_name, ce->name))
+		return NULL;
+
 	return submodule_from_path(the_repository, treeish_name, ce->name);
 }
 
