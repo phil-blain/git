@@ -329,8 +329,17 @@ static int check_submodule_move_head(const struct cache_entry *ce,
 {
 	unsigned flags = SUBMODULE_MOVE_HEAD_DRY_RUN;
 	const struct submodule *sub = submodule_from_ce(ce);
+	struct strbuf sub_gitdir = STRBUF_INIT;
+	int sub_is_cloned = 0;
 
-	if (!sub)
+	/* We want to recursively check out sub; check if it is cloned */
+	if (sub) {
+		submodule_name_to_gitdir(&sub_gitdir, the_repository, sub->name);
+		sub_is_cloned = is_git_directory(sub_gitdir.buf);
+		strbuf_release(&sub_gitdir);
+		if (!sub_is_cloned)
+			return add_rejected_path(o, ERROR_MISSING_SUBMODULE, ce->name);
+	} else
 		return 0;
 
 	if (o->reset)
