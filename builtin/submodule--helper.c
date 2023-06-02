@@ -885,7 +885,7 @@ static void print_submodule_summary(struct summary_cb *info, const char *errmsg,
 					     info->summary_limit);
 
 			strvec_pushl(&cp_log.args, "--pretty=  %m %s",
-				     "--first-parent", NULL);
+				     NULL);
 			strvec_pushf(&cp_log.args, "%s...%s",
 				     src_abbrev, dst_abbrev);
 		} else if (S_ISGITLINK(p->mod_dst)) {
@@ -985,7 +985,7 @@ static void generate_submodule_summary(struct summary_cb *info,
 		struct strbuf sb_rev_list = STRBUF_INIT;
 
 		strvec_pushl(&cp_rev_list.args, "rev-list",
-			     "--first-parent", "--count", NULL);
+			     "--count", NULL);
 		if (S_ISGITLINK(p->mod_src) && S_ISGITLINK(p->mod_dst))
 			strvec_pushf(&cp_rev_list.args, "%s...%s",
 				     src_abbrev, dst_abbrev);

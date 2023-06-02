@@ -480,7 +480,6 @@ static int prepare_submodule_diff_summary(struct repository *r, struct rev_info 
 	repo_init_revisions(r, rev, NULL);
 	setup_revisions(0, NULL, rev, NULL);
 	rev->left_right = 1;
-	rev->first_parent_only = 1;
 	left->object.flags |= SYMMETRIC_LEFT;
 	add_pending_object(rev, &left->object, path);
 	add_pending_object(rev, &right->object, path);
