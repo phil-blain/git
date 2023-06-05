@@ -197,12 +197,13 @@ on the command line, and ignored if there is any include pattern.
 
 --whitespace=<action>::
 	When applying a patch, detect a new or modified line that has
-	whitespace errors.  What are considered whitespace errors is
-	controlled by `core.whitespace` configuration.  By default,
+	whitespace errors.  What are considered whitespace errors is controlled
+	by the `core.whitespace` configuration and the `whitespace` attribute
+	for each path in the patch (see linkgit:gitattributes[5]).  By default,
 	trailing whitespaces (including lines that solely consist of
-	whitespaces) and a space character that is immediately followed
-	by a tab character inside the initial indent of the line are
-	considered whitespace errors.
+	whitespaces) and a space character that is immediately followed by a
+	tab character inside the initial indent of the line are considered
+	whitespace errors.
 +
 By default, the command outputs warning messages but applies the patch.
 When `git-apply` is used for statistics and not applying a
