@@ -12,7 +12,7 @@ SYNOPSIS
 'git subtree' [<options>] -P <prefix> [-S[<keyid>]] add <local-commit>
 'git subtree' [<options>] -P <prefix> [-S[<keyid>]] add <repository> <remote-ref>
 'git subtree' [<options>] -P <prefix> [-S[<keyid>]] merge <local-commit> [<repository>]
-'git subtree' [<options>] -P <prefix> [-S[<keyid>]] split [<local-commit>]
+'git subtree' [<options>] -P <prefix> [-S[<keyid>]] split [<local-commit>] [<repository>]
 
 [verse]
 'git subtree' [<options>] -P <prefix> [-S[<keyid>]] pull <repository> <remote-ref>

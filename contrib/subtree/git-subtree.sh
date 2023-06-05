@@ -28,8 +28,8 @@ fi
 OPTS_SPEC="\
 git subtree add   --prefix=<prefix> [-S[=<key-id>]] <commit>
 git subtree add   --prefix=<prefix> [-S[=<key-id>]] <repository> <ref>
-git subtree merge --prefix=<prefix> [-S[=<key-id>]] <commit>
-git subtree split --prefix=<prefix> [-S[=<key-id>]] [<commit>]
+git subtree merge --prefix=<prefix> [-S[=<key-id>]] <commit> [<repository>]
+git subtree split --prefix=<prefix> [-S[=<key-id>]] [<commit>] [<repository>]
 git subtree pull  --prefix=<prefix> [-S[=<key-id>]] <repository> <ref>
 git subtree push  --prefix=<prefix> [-S[=<key-id>]] <repository> <refspec>
 --
