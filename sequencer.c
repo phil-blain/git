@@ -3811,6 +3811,7 @@ static int do_exec(struct repository *r, const char *command_line, int quiet)
 	if (repo_read_index(r) < 0)
 		return error(_("could not read index"));
 
+        /* this should maybe be quiet ? or else it shows "error: cannot rebase: You have unstaged changes" and then "warning: execution failed: <cmd>" which is a little bit confusing */
 	dirty = require_clean_work_tree(r, "rebase", NULL, 1, 1);
 
 	if (status) {
