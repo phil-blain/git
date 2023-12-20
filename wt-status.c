@@ -258,6 +258,7 @@ static void wt_longstatus_print_dirty_header(struct wt_status *s,
 	else
 		status_printf_ln(s, c, _("  (use \"git add/rm <file>...\" to update what will be committed)"));
 	status_printf_ln(s, c, _("  (use \"git restore <file>...\" to discard changes in working directory)"));
+	/*  check intent-to-add and recommend restore --staged */
 	if (has_dirty_submodules)
 		status_printf_ln(s, c, _("  (commit or discard the untracked or modified content in submodules)"));
 }
