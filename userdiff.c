@@ -182,6 +182,7 @@ IPATTERN("fortran",
 	 /* Don't match 'module procedure' lines */
 	 "!^[ \t]*MODULE[ \t]+PROCEDURE[ \t]\n"
 	 /* Program, module, block data */
+	 // having 'END' here is sometimes not useful, since git log -1 -L:subroutine_name:path when that commit adds that subroutine, does not show the 'END SUBROUTINE' line
 	 "^[ \t]*((END[ \t]+)?(PROGRAM|MODULE|BLOCK[ \t]+DATA"
 		/* Subroutines and functions */
 		"|([^!'\" \t]+[ \t]+)*(SUBROUTINE|FUNCTION))[ \t]+[A-Z].*)$",
