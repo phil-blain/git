@@ -825,6 +825,12 @@ completeness:
 * State directories: The two backends keep their state in different
   directories under `.git/`
 
+* No-op invocations: When the range to rebase is already directly a descendant of `<upstream>`  (find a way to word that better),
+  the merge backend will not create new commits, whereas the apply backend
+  will always create new commits (i.e. with new committer date and committer ident).
+  It is as if the apply backend defaults to --force-rebase
+  (at least when I try with 'git rebase --apply @{u}).
+
 include::merge-strategies.txt[]
 
 NOTES
