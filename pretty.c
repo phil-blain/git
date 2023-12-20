@@ -1344,6 +1344,7 @@ static size_t parse_describe_args(const char *start, struct strvec *args)
 		{ "abbrev", DESCRIBE_ARG_INTEGER },
 		{ "exclude", DESCRIBE_ARG_STRING },
 		{ "match", DESCRIBE_ARG_STRING },
+		{ "first-parent", DESCRIBE_ARG_BOOL },
 	};
 	const char *arg = start;
 
