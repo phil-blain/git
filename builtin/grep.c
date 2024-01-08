@@ -522,7 +522,7 @@ static int grep_submodule(struct grep_opt *opt,
 						  oid, OBJ_TREE,
 						  &size, NULL);
 		if (!data)
-			die(_("unable to read tree (%s)"), oid_to_hex(oid));
+			die(_("unable to read submodule commit (%s)"), oid_to_hex(oid));
 
 		strbuf_addstr(&base, filename);
 		strbuf_addch(&base, '/');
