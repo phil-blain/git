@@ -108,9 +108,15 @@ objects from the source repository into a pack in the cloned repository.
 	an already existing repository as an alternate will
 	require fewer objects to be copied from the repository
 	being cloned, reducing network and local storage costs.
+	If `--recurse-submodules` is given, set
+	`submodule.alternateLocation` to `superproject` such
+	that each submodule will have an alternate set up to
+	point to the object directory of the corresponding
+	submodule in the reference repository.
 	When using the `--reference-if-able`, a non existing
 	directory is skipped with a warning instead of aborting
-	the clone.
+	the clone, and if `--recurse-submodules` is given,
+	missing submodule directories are similarily skipped.
 +
 *NOTE*: see the NOTE for the `--shared` option, and also the
 `--dissociate` option.
