@@ -270,11 +270,11 @@ cmd_update()
 			;;
 		--reference)
 			case "$2" in '') usage ;; esac
-			reference="--reference=$2"
+			reference="${reference:+"${reference} "}--reference=$2"
 			shift
 			;;
 		--reference=*)
-			reference="$1"
+			reference="${reference:+"${reference} "}$1"
 			;;
 		--dissociate)
 			dissociate=1
@@ -349,7 +349,7 @@ cmd_update()
 		${rebase:+--rebase} \
 		${merge:+--merge} \
 		${checkout:+--checkout} \
-		${reference:+"$reference"} \
+		${reference:+$reference} \
 		${dissociate:+"--dissociate"} \
 		${depth:+"$depth"} \
 		${require_init:+--require-init} \
