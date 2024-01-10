@@ -125,7 +125,7 @@ test_expect_success 'missing submodule alternate fails clone and submodule updat
 		cd super-clone &&
 		# test superproject has alternates setup correctly
 		test_alternate_is_used .git/objects/info/alternates . &&
-		# update of the submodule succeeds
+		# update of the submodule fails
 		test_must_fail git submodule update --init &&
 		# and we have no alternates:
 		test_path_is_missing .git/modules/sub/objects/info/alternates &&
