@@ -1754,7 +1754,7 @@ static int find_first_merges(struct repository *repo,
 		if (ret > 0)
 			add_object_array(o, NULL, &merges);
 	}
-	reset_revision_walk();
+	repo_reset_revision_walk(&revs);
 
 	/* Now we've got all merges that contain a and b. Prune all
 	 * merges that contain another found merge and save them in
