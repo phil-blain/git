@@ -931,7 +931,7 @@ static void collect_changed_submodules(struct repository *r,
 		release_revisions(&diff_rev);
 	}
 
-	reset_revision_walk();
+	reset_revision_walk(&rev);
 	release_revisions(&rev);
 }
 

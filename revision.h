@@ -460,10 +460,17 @@ int handle_revision_arg(const char *arg, struct rev_info *revs,
 void revision_opts_finish(struct rev_info *revs);
 
 /**
- * Reset the flags used by the revision walking api. You can use this to do
- * multiple sequential revision walks.
+ * Reset the flags used by the revision walking api in revs->repo. You can use
+ * this to do multiple sequential revision walks.
  */
-void reset_revision_walk(void);
+void reset_revision_walk(struct rev_info *revs);
+
+/**
+ * Reset the flags used by the revision walking api in repository r. Prefer
+ * using reset_revision_walk if possible. You can use this to do multiple
+ * sequential revision walks.
+ */
+void repo_reset_revision_walk(struct repository *r);
 
 /**
  * Prepares the rev_info structure for a walk. You should check if it returns

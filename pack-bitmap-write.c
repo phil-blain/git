@@ -223,7 +223,7 @@ static void bitmap_builder_init(struct bitmap_builder *bb,
 	memset(bb, 0, sizeof(*bb));
 	init_bb_data(&bb->data);
 
-	reset_revision_walk();
+	repo_reset_revision_walk(writer->to_pack->repo);
 	repo_init_revisions(writer->to_pack->repo, &revs, NULL);
 	revs.topo_order = 1;
 	revs.first_parent_only = 1;

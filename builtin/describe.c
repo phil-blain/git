@@ -498,7 +498,7 @@ static void process_object(struct object *obj, const char *path, void *data)
 	struct process_commit_data *pcd = data;
 
 	if (oideq(&pcd->looking_for, &obj->oid) && !pcd->dst->len) {
-		reset_revision_walk();
+		reset_revision_walk(pcd->revs);
 		describe_commit(&pcd->current_commit, pcd->dst);
 		strbuf_addf(pcd->dst, ":%s", path);
 		free_commit_list(pcd->revs->commits);
@@ -524,7 +524,7 @@ static void describe_blob(struct object_id oid, struct strbuf *dst)
 		die("revision walk setup failed");
 
 	traverse_commit_list(&revs, process_commit, process_object, &pcd);
-	reset_revision_walk();
+	reset_revision_walk(&revs);
 	release_revisions(&revs);
 }
 
