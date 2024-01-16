@@ -3650,6 +3650,11 @@ void reset_revision_walk(void)
 			   SEEN | ADDED | SHOWN | TOPO_WALK_EXPLORED | TOPO_WALK_INDEGREE);
 }
 
+void repo_reset_revision_walk(struct rev_info *revs)
+{
+	clear_object_flags(revs->repo, SEEN | ADDED | SHOWN | TOPO_WALK_EXPLORED | TOPO_WALK_INDEGREE);
+}
+
 static int mark_uninteresting(const struct object_id *oid,
 			      struct packed_git *pack UNUSED,
 			      uint32_t pos UNUSED,
