@@ -1300,7 +1300,7 @@ static struct bitmap *find_boundary_objects(struct bitmap_index *bitmap_git,
 	revs->tree_objects = tmp_trees;
 	revs->tag_objects = tmp_tags;
 
-	reset_revision_walk();
+	reset_revision_walk(revs);
 	repo_clear_object_flags(revs->repo, UNINTERESTING);
 
 	/*
@@ -1997,7 +1997,7 @@ struct bitmap_index *prepare_bitmap_walk(struct rev_info *revs,
 			trace2_region_enter("pack-bitmap", "haves/classic", repo);
 			revs->ignore_missing_links = 1;
 			haves_bitmap = find_objects(bitmap_git, revs, haves, NULL);
-			reset_revision_walk();
+			reset_revision_walk(revs);
 			revs->ignore_missing_links = 0;
 			trace2_region_leave("pack-bitmap", "haves/classic", repo);
 		}
@@ -2008,7 +2008,7 @@ struct bitmap_index *prepare_bitmap_walk(struct rev_info *revs,
 
 	if (use_boundary_traversal) {
 		object_array_clear(&revs->pending);
-		reset_revision_walk();
+		reset_revision_walk(revs);
 	}
 
 	wants_bitmap = find_objects(bitmap_git, revs, wants, haves_bitmap);
