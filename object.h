@@ -333,6 +333,10 @@ void object_array_filter(struct object_array *array,
  */
 void object_array_clear(struct object_array *array);
 
+/*
+ * Clear the specified object flags from all in-core commit objects from
+ * the specified repository.
+ */
 void clear_object_flags(struct repository *repo, unsigned flags);
 
 /*
