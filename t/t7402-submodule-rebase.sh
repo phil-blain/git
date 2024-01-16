@@ -9,6 +9,7 @@ test_description='Test rebasing, stashing, etc. with submodules'
 
 test_expect_success setup '
 
+	git branch -m primary &&
 	echo file > file &&
 	git add file &&
 	test_tick &&
@@ -29,6 +30,7 @@ test_expect_success 'rebase with a dirty submodule' '
 
 	(cd submodule &&
 	 echo 3rd line >> file &&
+	 git checkout -b sub-branch &&
 	 test_tick &&
 	 git commit -m fork -a) &&
 	echo unrelated >> file2 &&
@@ -102,6 +104,7 @@ test_expect_success 'stash with a dirty submodule' '
 '
 
 test_expect_success 'rebasing submodule that should conflict' '
+	test_when_finished "git rebase --abort" &&
 	git reset --hard &&
 	git checkout added-submodule &&
 	git add submodule &&
@@ -129,6 +132,23 @@ test_expect_success 'rebasing submodule that should conflict' '
 		sub_expect="go to submodule (submodule), and either merge commit $(git -C submodule rev-parse --short HEAD^0)" &&
 		grep "$sub_expect" actual_output
 	fi
+'
+
+test_expect_success 'rebase notices submodule commit were rebased and suggests resolution' '
+	git -C submodule checkout -b primary-sub origin/HEAD &&
+	test_commit -C submodule new &&
+	git checkout --recurse-submodules primary &&
+	git add submodule &&
+	test_tick &&
+	git commit -m "upstream submodule update" &&
+	git -C submodule checkout sub-branch &&
+	git -C submodule rebase primary-sub &&
+	git checkout --recurse-submodules added-submodule &&
+	test_must_fail git rebase primary &&
+	git -C submodule checkout --detach sub-branch^ &&
+	git add submodule &&
+	test_tick &&
+	test_must_fail git rebase --continue
 '
 
 test_done
