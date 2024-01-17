@@ -467,6 +467,12 @@ void revision_opts_finish(struct rev_info *revs);
 void reset_revision_walk(void);
 
 /**
+ * Reset the flags used by the revision walking api. You can use this to do
+ * multiple sequential revision walks.
+ */
+void repo_reset_revision_walk(struct rev_info *revs);
+
+/**
  * Prepares the rev_info structure for a walk. You should check if it returns
  * any error (non-zero return code) and if it does not, you can start using
  * get_revision() to do the iteration.

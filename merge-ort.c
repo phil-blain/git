@@ -541,6 +541,7 @@ enum conflict_and_info_types {
 
 	/* Special submodule cases broken out from FAILED_TO_MERGE */
 	CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLE_RESOLUTION,
+	CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED,
 	CONFLICT_SUBMODULE_NOT_INITIALIZED,
 	CONFLICT_SUBMODULE_HISTORY_NOT_AVAILABLE,
 	CONFLICT_SUBMODULE_MAY_HAVE_REWINDS,
@@ -609,6 +610,8 @@ static const char *type_short_descriptions[] = {
 	/*** Special submodule cases broken out from FAILED_TO_MERGE ***/
 	[CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLE_RESOLUTION] =
 		"CONFLICT (submodule with possible resolution)",
+	[CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED] =
+		"CONFLICT (submodule may have been rebased)",
 	[CONFLICT_SUBMODULE_NOT_INITIALIZED] =
 		"CONFLICT (submodule not initialized)",
 	[CONFLICT_SUBMODULE_HISTORY_NOT_AVAILABLE] =
@@ -1754,7 +1757,7 @@ static int find_first_merges(struct repository *repo,
 		if (ret > 0)
 			add_object_array(o, NULL, &merges);
 	}
-	reset_revision_walk();
+	repo_reset_revision_walk(&revs);
 
 	/* Now we've got all merges that contain a and b. Prune all
 	 * merges that contain another found merge and save them in
@@ -1789,6 +1792,46 @@ static int find_first_merges(struct repository *repo,
 	return result->nr;
 }
 
+static int find_rebased_commits(struct repository *repo,
+				struct commit *b,
+				struct object_array *rebased_commits)
+{
+	struct strbuf sb = STRBUF_INIT;
+	struct pretty_print_context ctx = {0};
+	struct commit *commit;
+	struct strvec rev_args = STRVEC_INIT;
+	struct rev_info revs;
+	struct setup_revision_opt rev_opts;
+
+	repo_format_commit_message(repo, b, "^%s", &sb, &ctx);
+	// here, check for the number of parents of b and add --min-parents=n --max-parents=n
+	// this ensure that we find a normal commit if b is a normal commit, etc.
+	// it should reduce the number of false hits
+	strvec_pushl(&rev_args, "rev-list", "--all", "--grep", sb.buf,
+				"--not", oid_to_hex(&b->object.oid), NULL);
+
+	memset(rebased_commits, 0, sizeof(struct object_array));
+	memset(&rev_opts, 0, sizeof(rev_opts));
+
+	repo_init_revisions(repo, &revs, NULL);
+	/* FIXME: can't handle linked worktrees in submodules yet */
+	revs.single_worktree = 1;
+	setup_revisions(rev_args.nr, rev_args.v, &revs, &rev_opts);
+
+	if (prepare_revision_walk(&revs))
+		die("revision walk setup failed");
+	while ((commit = get_revision(&revs)) != NULL) {
+		struct object *o = &(commit->object);
+			add_object_array(o, NULL, rebased_commits);
+	}
+	repo_reset_revision_walk(&revs);
+
+	strbuf_release(&sb);
+	strvec_clear(&rev_args);
+	release_revisions(&revs);
+	return rebased_commits->nr;
+}
+
 static int merge_submodule(struct merge_options *opt,
 			   const char *path,
 			   const struct object_id *o,
@@ -1798,10 +1841,10 @@ static int merge_submodule(struct merge_options *opt,
 {
 	struct repository subrepo;
 	struct strbuf sb = STRBUF_INIT;
-	int ret = 0, ret2;
+	int ret = 0, ret2, ret3;
 	struct commit *commit_o, *commit_a, *commit_b;
-	int parent_count;
-	struct object_array merges;
+	int parent_count, rebased_count;
+	struct object_array merges, rebased;
 
 	int i;
 	int search = !opt->priv->call_depth;
@@ -1846,18 +1889,8 @@ static int merge_submodule(struct merge_options *opt,
 
 	/* check whether both changes are forward */
 	ret2 = repo_in_merge_bases(&subrepo, commit_o, commit_a);
-	if (ret2 < 0) {
-		path_msg(opt, ERROR_SUBMODULE_CORRUPT, 0,
-			 path, NULL, NULL, NULL,
-			 _("error: failed to merge submodule %s "
-			   "(repository corrupt)"),
-			 path);
-		ret = -1;
-		goto cleanup;
-	}
-	if (ret2 > 0)
-		ret2 = repo_in_merge_bases(&subrepo, commit_o, commit_b);
-	if (ret2 < 0) {
+	ret3 = repo_in_merge_bases(&subrepo, commit_o, commit_b);
+	if (ret2 < 0 || ret3 < 0) {
 		path_msg(opt, ERROR_SUBMODULE_CORRUPT, 0,
 			 path, NULL, NULL, NULL,
 			 _("error: failed to merge submodule %s "
@@ -1867,12 +1900,28 @@ static int merge_submodule(struct merge_options *opt,
 		goto cleanup;
 	}
 	if (!ret2) {
-		path_msg(opt, CONFLICT_SUBMODULE_MAY_HAVE_REWINDS, 0,
-			 path, NULL, NULL, NULL,
-			 _("Failed to merge submodule %s "
-			   "(commits don't follow merge-base)"),
-			 path);
-		goto cleanup;
+		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased);
+		/* if side 2 is forward but side 1 is not, we are potentially rebasing */
+		if (ret3  && rebased_count > 0) {
+			for (i = 0; i < rebased.nr; i++)
+					format_commit(&sb, 4, &subrepo,
+						      (struct commit *)rebased.objects[i].item);
+			path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED, 0,
+					path, NULL, NULL, NULL,
+					_("Failed to merge submodule %s, but multiple "
+					"rebased versions exist:\n%s"), path, sb.buf);
+			strbuf_release(&sb);
+			object_array_clear(&rebased);
+			goto cleanup;
+		} else {
+			path_msg(opt, CONFLICT_SUBMODULE_MAY_HAVE_REWINDS, 0,
+				 path, NULL, NULL, NULL,
+				 _("Failed to merge submodule %s "
+				   "(commits don't follow merge-base)"),
+				 path);
+			goto cleanup;
+
+		}
 	}
 
 	/* Case #1: a is contained in b or vice versa */
@@ -1939,9 +1988,30 @@ static int merge_submodule(struct merge_options *opt,
 		ret = -1;
 		break;
 	case 0:
-		path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE, 0,
-			 path, NULL, NULL, NULL,
-			 _("Failed to merge submodule %s"), path);
+		// here we would need to also do the search for a rebased commit
+		// for the first commit of the rebased submodule branch,
+		// since the merge-base in this case will be the submodule version
+		// at the fork point of the superproject branch, so both submodule commits
+		// are forward
+		/* commit_a might be the first commit of a submodule branch which was rebased,
+		 * and we are rebasing a superproject branch that ....
+		 */
+		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased);
+			if (rebased_count > 0) {
+				for (i = 0; i < rebased.nr; i++)
+					format_commit(&sb, 4, &subrepo,
+						      (struct commit *)rebased.objects[i].item);
+				path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED, 0,
+					 path, NULL, NULL, NULL,
+					 _("Failed to merge submodule %s, but multiple "
+					   "rebased versions exist:\n%s"), path, sb.buf);
+				strbuf_release(&sb);
+				object_array_clear(&rebased);
+			} else {
+				path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE, 0,
+					path, NULL, NULL, NULL,
+					_("Failed to merge submodule %s"), path);
+			}
 		break;
 
 	case 1:
