@@ -49,6 +49,7 @@
 #include "commit-reach.h"
 #include "wt-status.h"
 #include "commit-graph.h"
+#include "submodule.h"
 
 #define DEFAULT_TWOHEAD (1<<0)
 #define DEFAULT_OCTOPUS (1<<1)
@@ -649,7 +650,8 @@ static int git_merge_config(const char *k, const char *v,
 	} else if (!strcmp(k, "merge.autostash")) {
 		autostash = git_config_bool(k, v);
 		return 0;
-	}
+	} else if (!strcmp(k, "submodule.recurse"))
+                return git_default_submodule_config(k, v, cb);
 
 	status = fmt_merge_msg_config(k, v, ctx, cb);
 	if (status)
