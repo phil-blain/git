@@ -48,6 +48,7 @@
 #include "rebase-interactive.h"
 #include "reset.h"
 #include "branch.h"
+#include "submodule.h"
 
 #define GIT_REFLOG_ACTION "GIT_REFLOG_ACTION"
 
@@ -325,6 +326,9 @@ static int git_sequencer_config(const char *k, const char *v,
 
 	if (opts->action == REPLAY_REVERT && !strcmp(k, "revert.reference"))
 		opts->commit_use_reference = git_config_bool(k, v);
+
+	if (!strcmp(k, "submodule.recurse"))
+                return git_default_submodule_config(k, v, cb);
 
 	return git_diff_basic_config(k, v, ctx, NULL);
 }
