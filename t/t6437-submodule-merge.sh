@@ -543,4 +543,28 @@ test_expect_success 'merging should fail with no merge base' '
 	fi)
 '
 
+test_expect_success 'merge --recurse-submodules with conflict in .gitmodules' '
+	git init gitmodules-conflict &&
+	(
+	cd gitmodules-conflict &&
+	test_commit initial &&
+	git init sub &&
+	test_commit -C sub initial-sub &&
+	git submodule add ./sub &&
+	test_tick &&
+	git commit -m "add sub" &&
+	git branch other &&
+	git config -f .gitmodules submodule.sub.url ./sub1 &&
+	git add .gitmodules &&
+	test_tick &&
+	git commit -m "change .gitmodules on branch1" &&
+	git checkout other &&
+	git config -f .gitmodules submodule.sub.url ./sub2 &&
+	git add .gitmodules &&
+	test_tick &&
+	git commit -m "change .gitmodules on branch2" &&
+	git -c submodule.recurse merge -
+	)
+'
+
 test_done

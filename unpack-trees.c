@@ -472,7 +472,7 @@ static int check_updates(struct unpack_trees_options *o,
 
 	git_attr_set_direction(GIT_ATTR_CHECKOUT);
 
-	if (should_update_submodules())
+	if (should_update_submodules() && !o->gitmodules_unmerged)
 		load_gitmodules_file(index, NULL);
 
 	for (i = 0; i < index->cache_nr; i++) {
@@ -487,7 +487,7 @@ static int check_updates(struct unpack_trees_options *o,
 	remove_marked_cache_entries(index, 0);
 	remove_scheduled_dirs();
 
-	if (should_update_submodules())
+	if (should_update_submodules() && !o->gitmodules_unmerged)
 		load_gitmodules_file(index, &state);
 
 	if (repo_has_promisor_remote(the_repository))

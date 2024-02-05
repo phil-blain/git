@@ -4545,6 +4545,7 @@ static int checkout(struct merge_options *opt,
 	int ret;
 	struct tree_desc trees[2];
 	struct unpack_trees_options unpack_opts;
+	struct merge_options_internal *opti = opt->priv;
 
 	memset(&unpack_opts, 0, sizeof(unpack_opts));
 	unpack_opts.head_idx = -1;
@@ -4569,6 +4570,8 @@ static int checkout(struct merge_options *opt,
 	unpack_opts.verbose_update = (opt->verbosity > 2);
 	unpack_opts.fn = twoway_merge;
 	unpack_opts.preserve_ignored = 0; /* FIXME: !opts->overwrite_ignore */
+	if (strmap_contains(&opti->conflicted, GITMODULES_FILE))
+		unpack_opts.gitmodules_unmerged = 1;
 	if (parse_tree(prev) < 0)
 		return -1;
 	init_tree_desc(&trees[0], &prev->object.oid, prev->buffer, prev->size);
@@ -4866,9 +4869,11 @@ void merge_switch_to_result(struct merge_options *opt,
 {
 	assert(opt->priv == NULL);
 	if (result->clean >= 0 && update_worktree_and_index) {
+		opt->priv = result->priv;
 		trace2_region_enter("merge", "checkout", opt->repo);
 		if (checkout(opt, head, result->tree)) {
 			/* failure to function */
+			opt->priv = NULL;
 			result->clean = -1;
 			merge_finalize(opt, result);
 			trace2_region_leave("merge", "checkout", opt->repo);
@@ -4877,7 +4882,6 @@ void merge_switch_to_result(struct merge_options *opt,
 		trace2_region_leave("merge", "checkout", opt->repo);
 
 		trace2_region_enter("merge", "record_conflicted", opt->repo);
-		opt->priv = result->priv;
 		if (record_conflicted_index_entries(opt)) {
 			/* failure to function */
 			opt->priv = NULL;
