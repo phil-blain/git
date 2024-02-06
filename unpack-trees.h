@@ -71,6 +71,7 @@ struct unpack_trees_options {
 		     quiet,
 		     exiting_early,
 		     dry_run,
+		     gitmodules_unmerged,
 		     skip_cache_tree_update;
 	enum unpack_trees_reset_type reset;
 	const char *prefix;
