@@ -1804,6 +1804,9 @@ static int find_rebased_commits(struct repository *repo,
 	struct setup_revision_opt rev_opts;
 
 	repo_format_commit_message(repo, b, "^%s", &sb, &ctx);
+	// here, check for the number of parents of b and add --min-parents=n --max-parents=n
+	// this ensure that we find a normal commit if b is a normal commit, etc.
+	// it should reduce the number of false hits
 	strvec_pushl(&rev_args, "rev-list", "--all", "--grep", sb.buf,
 				"--not", oid_to_hex(&b->object.oid), NULL);
 
