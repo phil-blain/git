@@ -1803,7 +1803,7 @@ static int find_rebased_commits(struct repository *repo,
 	struct rev_info revs;
 	struct setup_revision_opt rev_opts;
 
-	repo_format_commit_message(repo, b, "%s", &sb, &ctx);
+	repo_format_commit_message(repo, b, "^%s", &sb, &ctx);
 	strvec_pushl(&rev_args, "rev-list", "--all", "--grep", sb.buf,
 				"--not", oid_to_hex(&b->object.oid), NULL);
 
