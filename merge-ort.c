@@ -41,6 +41,7 @@
 #include "refs.h"
 #include "revision.h"
 #include "sparse-index.h"
+#include "string-list.h"
 #include "strmap.h"
 #include "trace2.h"
 #include "tree.h"
@@ -1745,7 +1746,8 @@ static int find_first_merges(struct repository *repo,
 
 static int find_rebased_commits(struct repository *repo,
 				struct commit *b,
-				struct object_array *rebased_commits)
+				struct object_array *rebased_commits,
+				struct string_list *rebased_branches)
 {
 	struct strbuf sb = STRBUF_INIT;
 	struct pretty_print_context ctx = {0};
@@ -1753,6 +1755,7 @@ static int find_rebased_commits(struct repository *repo,
 	struct strvec rev_args = STRVEC_INIT;
 	struct rev_info revs;
 	struct setup_revision_opt rev_opts = {0};
+	struct revision_sources revision_sources;
 
 	repo_format_commit_message(repo, b, "%s", &sb, &ctx);
 	strvec_pushl(&rev_args, "rev-list", "--all", "--grep", sb.buf,
@@ -1761,11 +1764,17 @@ static int find_rebased_commits(struct repository *repo,
 	repo_init_revisions(repo, &revs, NULL);
 	/* FIXME: can't handle linked worktrees in submodules yet */
 	revs.single_worktree = 1;
+	init_revision_sources(&revision_sources);
+	revs.sources = &revision_sources;
+	ctx.rev = &revs;
 	setup_revisions(rev_args.nr, rev_args.v, &revs, &rev_opts);
 
 	if (prepare_revision_walk(&revs))
 		die("revision walk setup failed");
 	while ((commit = get_revision(&revs)) != NULL) {
+		strbuf_reset(&sb);
+		repo_format_commit_message(repo, commit, "%S", &sb, &ctx);
+		string_list_append(rebased_branches, sb.buf);
 		add_object_array(&(commit->object), NULL, rebased_commits);
 	}
 	reset_revision_walk(&revs);
@@ -1790,6 +1799,7 @@ static int merge_submodule(struct merge_options *opt,
 	int parent_count, rebased_count;
 	struct object_array merges;
 	struct object_array rebased = OBJECT_ARRAY_INIT;
+	struct string_list rebased_branches = STRING_LIST_INIT_DUP;
 
 	int i;
 	int search = !opt->priv->call_depth;
@@ -1834,18 +1844,20 @@ static int merge_submodule(struct merge_options *opt,
 
 	/* check whether both changes are forward */
 	if (!repo_in_merge_bases(&subrepo, commit_o, commit_a)) {
-		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased);
+		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased, &rebased_branches);
 		/* if side 2 is forward but side 1 is not, we are potentially rebasing */
 		if (repo_in_merge_bases(&subrepo, commit_o, commit_b) && rebased_count > 0) {
 			for (i = 0; i < rebased.nr; i++)
 				format_commit(&sb, 4, &subrepo,
-					      (struct commit *)rebased.objects[i].item);
+					      (struct commit *)rebased.objects[i].item,
+					      rebased_branches.items[i].string);
 			path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED, 0,
 					path, NULL, NULL, NULL,
 					_("Failed to merge submodule %s, but multiple "
 					"rebased versions exist:\n%s"), path, sb.buf);
 			strbuf_release(&sb);
 			object_array_clear(&rebased);
+			string_list_clear(&rebased_branches, 0);
 			goto cleanup;
 		} else {
 			path_msg(opt, CONFLICT_SUBMODULE_MAY_HAVE_REWINDS, 0,
@@ -1902,17 +1914,19 @@ static int merge_submodule(struct merge_options *opt,
 		/* commit_a might be the first commit of a submodule branch which was rebased,
 		 * and we are rebasing a superproject branch that ....
 		 */
-		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased);
+		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased, &rebased_branches);
 			if (rebased_count > 0) {
 				for (i = 0; i < rebased.nr; i++)
 					format_commit(&sb, 4, &subrepo,
-						      (struct commit *)rebased.objects[i].item);
+						      (struct commit *)rebased.objects[i].item,
+						      rebased_branches.items[i].string);
 				path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED, 0,
 					 path, NULL, NULL, NULL,
 					 _("Failed to merge submodule %s, but multiple "
 					   "rebased versions exist:\n%s"), path, sb.buf);
 				strbuf_release(&sb);
 				object_array_clear(&rebased);
+				string_list_clear(&rebased_branches, 0);
 			} else {
 				path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE, 0,
 					path, NULL, NULL, NULL,
