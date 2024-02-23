@@ -724,16 +724,10 @@ static void format_commit(struct strbuf *sb,
 			  struct repository *repo,
 			  struct commit *commit)
 {
-	struct merge_remote_desc *desc;
 	struct pretty_print_context ctx = {0};
 	ctx.abbrev = DEFAULT_ABBREV;
 
 	strbuf_addchars(sb, ' ', indent);
-	desc = merge_remote_util(commit);
-	if (desc) {
-		strbuf_addf(sb, "virtual %s\n", desc->name);
-		return;
-	}
 
 	repo_format_commit_message(repo, commit, "%h %s", sb, &ctx);
 	strbuf_addch(sb, '\n');
