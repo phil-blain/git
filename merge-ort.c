@@ -725,15 +725,23 @@ static void clear_or_reinit_internal_opts(struct merge_options_internal *opti,
 static void format_commit(struct strbuf *sb,
 			  int indent,
 			  struct repository *repo,
-			  struct commit *commit)
+			  struct commit *commit,
+			  const char* source)
 {
 	struct pretty_print_context ctx = {0};
+	struct strbuf format = STRBUF_INIT;
 	ctx.abbrev = DEFAULT_ABBREV;
 
 	strbuf_addchars(sb, ' ', indent);
 
-	repo_format_commit_message(repo, commit, "%h %s", sb, &ctx);
+	strbuf_addstr(&format, "%h %s");
+	if (source)
+		strbuf_addf(&format, " [%s]", source);
+
+	repo_format_commit_message(repo, commit, format.buf, sb, &ctx);
 	strbuf_addch(sb, '\n');
+
+	strbuf_release(&format);
 }
 
 __attribute__((format (printf, 8, 9)))
@@ -1914,7 +1922,7 @@ static int merge_submodule(struct merge_options *opt,
 
 	case 1:
 		format_commit(&sb, 4, &subrepo,
-			      (struct commit *)merges.objects[0].item);
+			      (struct commit *)merges.objects[0].item, NULL);
 		path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLE_RESOLUTION, 0,
 			 path, NULL, NULL, NULL,
 			 _("Failed to merge submodule %s, but a possible merge "
@@ -1925,7 +1933,7 @@ static int merge_submodule(struct merge_options *opt,
 	default:
 		for (i = 0; i < merges.nr; i++)
 			format_commit(&sb, 4, &subrepo,
-				      (struct commit *)merges.objects[i].item);
+				      (struct commit *)merges.objects[i].item, NULL);
 		path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLE_RESOLUTION, 0,
 			 path, NULL, NULL, NULL,
 			 _("Failed to merge submodule %s, but multiple "
