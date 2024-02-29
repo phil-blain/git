@@ -4736,12 +4736,10 @@ static inline void set_commit_tree(struct commit *c, struct tree *t)
 }
 
 static struct commit *make_virtual_commit(struct repository *repo,
-					  struct tree *tree,
-					  const char *comment)
+					  struct tree *tree)
 {
 	struct commit *commit = alloc_commit_node(repo);
 
-	set_merge_remote_desc(commit, comment, (struct object *)commit);
 	set_commit_tree(commit, tree);
 	commit->object.parsed = 1;
 	return commit;
@@ -5012,8 +5010,7 @@ static void merge_ort_internal(struct merge_options *opt,
 		struct tree *tree;
 
 		tree = lookup_tree(opt->repo, opt->repo->hash_algo->empty_tree);
-		merged_merge_bases = make_virtual_commit(opt->repo, tree,
-							 "ancestor");
+		merged_merge_bases = make_virtual_commit(opt->repo, tree);
 		ancestor_name = "empty tree";
 	} else if (merge_bases) {
 		ancestor_name = "merged common ancestors";
@@ -5050,8 +5047,7 @@ static void merge_ort_internal(struct merge_options *opt,
 		opt->priv->call_depth--;
 
 		merged_merge_bases = make_virtual_commit(opt->repo,
-							 result->tree,
-							 "merged tree");
+							 result->tree);
 		commit_list_insert(prev, &merged_merge_bases->parents);
 		commit_list_insert(next, &merged_merge_bases->parents->next);
 
