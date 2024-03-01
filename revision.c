@@ -1696,7 +1696,7 @@ static int handle_one_reflog(const char *refname_in_wt,
 	cb->warned_bad_reflog = 0;
 	strbuf_worktree_ref(cb->wt, &refname, refname_in_wt);
 	cb->name_for_errormsg = refname.buf;
-	refs_for_each_reflog_ent(get_main_ref_store(the_repository),
+	refs_for_each_reflog_ent(get_main_ref_store(cb->all_revs->repo),
 				 refname.buf,
 				 handle_one_reflog_ent, cb_data);
 	strbuf_release(&refname);
