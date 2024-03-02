@@ -646,6 +646,7 @@ static unsigned int count_bloom_filter_maybe;
 static unsigned int count_bloom_filter_definitely_not;
 static unsigned int count_bloom_filter_false_positive;
 static unsigned int count_bloom_filter_not_present;
+static struct repository *repository_bloom_filter;
 
 static void trace2_bloom_filter_statistics_atexit(void)
 {
@@ -658,7 +659,7 @@ static void trace2_bloom_filter_statistics_atexit(void)
 	jw_object_intmax(&jw, "false_positive", count_bloom_filter_false_positive);
 	jw_end(&jw);
 
-	trace2_data_json("bloom", the_repository, "statistics", &jw);
+	trace2_data_json("bloom", repository_bloom_filter, "statistics", &jw);
 
 	jw_release(&jw);
 }
@@ -745,6 +746,7 @@ static void prepare_to_use_bloom_filter(struct rev_info *revs)
 	}
 
 	if (trace2_is_enabled() && !bloom_filter_atexit_registered) {
+		repository_bloom_filter = revs->repo;
 		atexit(trace2_bloom_filter_statistics_atexit);
 		bloom_filter_atexit_registered = 1;
 	}
@@ -3546,6 +3548,7 @@ static int topo_walk_atexit_registered;
 static unsigned int count_explore_walked;
 static unsigned int count_indegree_walked;
 static unsigned int count_topo_walked;
+static struct repository *repository_topo_walk;
 
 static void trace2_topo_walk_statistics_atexit(void)
 {
@@ -3557,7 +3560,7 @@ static void trace2_topo_walk_statistics_atexit(void)
 	jw_object_intmax(&jw, "count_topo_walked", count_topo_walked);
 	jw_end(&jw);
 
-	trace2_data_json("topo_walk", the_repository, "statistics", &jw);
+	trace2_data_json("topo_walk", repository_topo_walk, "statistics", &jw);
 
 	jw_release(&jw);
 }
@@ -3744,6 +3747,7 @@ static void init_topo_walk(struct rev_info *revs)
 		prio_queue_reverse(&info->topo_queue);
 
 	if (trace2_is_enabled() && !topo_walk_atexit_registered) {
+		repository_topo_walk = revs->repo;
 		atexit(trace2_topo_walk_statistics_atexit);
 		topo_walk_atexit_registered = 1;
 	}
