@@ -66,7 +66,15 @@ struct bloom_key;
 struct bloom_filter_settings;
 struct option;
 struct parse_opt_ctx_t;
-define_shared_commit_slab(revision_sources, char *);
+
+struct revision_source {
+	char* name;
+	int count;
+};
+#define REVISION_SOURCE_INIT { 0 }
+void revision_source_init (struct revision_source *source);
+
+define_shared_commit_slab(revision_sources, struct revision_source *);
 
 struct rev_cmdline_info {
 	unsigned int nr;

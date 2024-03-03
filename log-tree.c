@@ -394,10 +394,10 @@ void show_decorations(struct rev_info *opt, struct commit *commit)
 	struct strbuf sb = STRBUF_INIT;
 
 	if (opt->sources) {
-		char **slot = revision_sources_peek(opt->sources, commit);
+		struct revision_source **slot = revision_sources_peek(opt->sources, commit);
 
 		if (slot && *slot)
-			fprintf(opt->diffopt.file, "\t%s", *slot);
+			fprintf(opt->diffopt.file, "\t%s", (*slot)->name);
 	}
 	if (!opt->show_decorations)
 		return;

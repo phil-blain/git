@@ -1432,7 +1432,7 @@ static size_t format_commit_one(struct strbuf *sb, /* in UTF-8 */
 	struct commit_list *p;
 	const char *arg, *eol;
 	size_t res;
-	char **slot;
+	struct revision_source **slot;
 
 	/* these are independent of the commit */
 	res = strbuf_expand_literal(sb, placeholder);
@@ -1593,7 +1593,7 @@ static size_t format_commit_one(struct strbuf *sb, /* in UTF-8 */
 		slot = revision_sources_at(c->pretty_ctx->rev->sources, commit);
 		if (!(slot && *slot))
 			return 0;
-		strbuf_addstr(sb, *slot);
+		strbuf_addstr(sb, (*slot)->name);
 		return 1;
 	case 'g':		/* reflog info */
 		switch(placeholder[1]) {
