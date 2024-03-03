@@ -55,7 +55,12 @@ volatile show_early_output_fn_t show_early_output;
 static char *term_bad;
 static char *term_good;
 
-implement_shared_commit_slab(revision_sources, char *);
+implement_shared_commit_slab(revision_sources, struct revision_source *);
+
+void revision_source_init(struct revision_source *source) {
+	struct revision_source blank = REVISION_SOURCE_INIT;
+	memcpy(source, &blank, sizeof(blank));
+}
 
 static inline int want_ancestry(const struct rev_info *revs);
 
@@ -468,10 +473,14 @@ static struct commit *handle_commit(struct rev_info *revs,
 				revs->limited = 1;
 		}
 		if (revs->sources) {
-			char **slot = revision_sources_at(revs->sources, commit);
+			struct revision_source **slot = revision_sources_at(revs->sources, commit);
 
-			if (!*slot)
-				*slot = xstrdup(name);
+			if (!*slot) {
+				CALLOC_ARRAY(*slot, 1);
+				revision_source_init(*slot);
+				(*slot)->name = xstrdup(name);
+				(*slot)->count++;
+			}
 		}
 		return commit;
 	}
@@ -1227,10 +1236,12 @@ static int process_parents(struct rev_info *revs, struct commit *commit,
 				return -1; /* corrupt repository */
 		}
 		if (revs->sources) {
-			char **slot = revision_sources_at(revs->sources, p);
+			struct revision_source **slot = revision_sources_at(revs->sources, p);
 
-			if (!*slot)
+			if (!*slot) {
 				*slot = *revision_sources_at(revs->sources, commit);
+				(*slot)->count++;
+			}
 		}
 		p->object.flags |= pass_flags;
 		if (!(p->object.flags & SEEN)) {
@@ -3208,6 +3219,17 @@ static void free_void_commit_list(void *list)
 	free_commit_list(list);
 }
 
+static void free_revision_source(struct revision_source **source)
+{
+	if (*source) {
+		(*source)->count--;
+		if ((*source)->count == 0) {
+			FREE_AND_NULL((*source)->name);
+			FREE_AND_NULL(*source);
+		}
+	}
+}
+
 void release_revisions(struct rev_info *revs)
 {
 	free_commit_list(revs->commits);
@@ -3236,6 +3258,9 @@ void release_revisions(struct rev_info *revs)
 		clear_bloom_key(&revs->bloom_keys[i]);
 	FREE_AND_NULL(revs->bloom_keys);
 	revs->bloom_keys_nr = 0;
+
+	if (revs->sources)
+		deep_clear_revision_sources(revs->sources, free_revision_source);
 }
 
 static void add_child(struct rev_info *revs, struct commit *parent, struct commit *child)

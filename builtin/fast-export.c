@@ -676,7 +676,7 @@ static void handle_commit(struct commit *commit, struct rev_info *rev,
 		if (!S_ISGITLINK(diff_queued_diff.queue[i]->two->mode))
 			export_blob(&diff_queued_diff.queue[i]->two->oid);
 
-	refname = *revision_sources_at(&revision_sources, commit);
+	refname = (*revision_sources_at(&revision_sources, commit))->name;
 	/*
 	 * FIXME: string_list_remove() below for each ref is overall
 	 * O(N^2).  Compared to a history walk and diffing trees, this is
@@ -937,6 +937,7 @@ static void get_tags_and_duplicates(struct rev_cmdline_info *info)
 		struct object_id oid;
 		struct commit *commit;
 		char *full_name = NULL;
+		struct revision_source **slot;
 
 		if (e->flags & UNINTERESTING)
 			continue;
@@ -986,9 +987,12 @@ static void get_tags_and_duplicates(struct rev_cmdline_info *info)
 		if (e->item->type != OBJ_TAG)
 			string_list_append(&extra_refs, full_name)->util = commit;
 
-		if (!*revision_sources_at(&revision_sources, commit))
-			*revision_sources_at(&revision_sources, commit) = full_name;
-		else
+		if (!*slot) {
+			CALLOC_ARRAY(*slot, 1);
+			revision_source_init(*slot);
+			(*slot)->name = full_name;
+			(*slot)->count++;
+		} else
 			free(full_name);
 	}
 
