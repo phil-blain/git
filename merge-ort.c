@@ -1745,6 +1745,7 @@ static int find_first_merges(struct repository *repo,
 }
 
 static int find_rebased_commits(struct repository *repo,
+				struct commit *a,
 				struct commit *b,
 				struct object_array *rebased_commits,
 				struct string_list *rebased_branches)
@@ -1772,10 +1773,12 @@ static int find_rebased_commits(struct repository *repo,
 	if (prepare_revision_walk(&revs))
 		die("revision walk setup failed");
 	while ((commit = get_revision(&revs)) != NULL) {
-		strbuf_reset(&sb);
-		repo_format_commit_message(repo, commit, "%S", &sb, &ctx);
-		string_list_append(rebased_branches, sb.buf);
-		add_object_array(&(commit->object), NULL, rebased_commits);
+		if (repo_in_merge_bases(repo, a, commit)) {
+			strbuf_reset(&sb);
+			repo_format_commit_message(repo, commit, "%S", &sb, &ctx);
+			string_list_append(rebased_branches, sb.buf);
+			add_object_array(&(commit->object), NULL, rebased_commits);
+		}
 	}
 	reset_revision_walk(&revs);
 
@@ -1844,7 +1847,7 @@ static int merge_submodule(struct merge_options *opt,
 
 	/* check whether both changes are forward */
 	if (!repo_in_merge_bases(&subrepo, commit_o, commit_a)) {
-		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased, &rebased_branches);
+		rebased_count = find_rebased_commits(&subrepo, commit_a, commit_b, &rebased, &rebased_branches);
 		/* if side 2 is forward but side 1 is not, we are potentially rebasing */
 		if (repo_in_merge_bases(&subrepo, commit_o, commit_b) && rebased_count > 0) {
 			for (i = 0; i < rebased.nr; i++)
@@ -1914,7 +1917,7 @@ static int merge_submodule(struct merge_options *opt,
 		/* commit_a might be the first commit of a submodule branch which was rebased,
 		 * and we are rebasing a superproject branch that ....
 		 */
-		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased, &rebased_branches);
+		rebased_count = find_rebased_commits(&subrepo, commit_a, commit_b, &rebased, &rebased_branches);
 			if (rebased_count > 0) {
 				for (i = 0; i < rebased.nr; i++)
 					format_commit(&sb, 4, &subrepo,
