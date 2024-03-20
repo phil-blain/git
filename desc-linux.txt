@@ -1,0 +1,66 @@
+There are two calls to check_submodule_move_head that are of interest:
+- 1st in verify_uptodate_1:1874 (called from merged_entry:2200)
+  (move from "HEAD" to ce->oid, o->reset == 0)
+ -> this does not seem to do anything if HEAD and ce->oid coincide.
+-> because git read-tree -m hash hash seems to do nothing
+-> we should gitve the empty tree hash
+ -> would have to check with coverage report
+ -> reading cmd_read_tree, the only way it can exit with non-zero
+    is if unpack_tree errors out, since read-tree always exits with zero
+    in dry-run mode if unpack_tree succeeds (see builtin/read-tree.c:253)
+
+
+- 2nd in merged_entry:2210
+  (move from old->oid to ce->oid,  o->reset == 0)
+
+Note: o->reset ==0 means that submodule_move_head is invoked *without* the FORCE flag
+
+Both were added in a7bc845a9a (unpack-trees: check if we can perform the operation for submodules, 2017-03-14), merged in
+e394fa01d6 (Merge branch 'sb/checkout-recurse-submodules', 2017-03-28).
+
+It is the second call that aborts in my first test case with:
+error: Entry 'submodule/third.t' not uptodate. Cannot merge.
+(and here another error from the parent)
+
+Note: in the "first test", that correctly aborts, in the child read-tree we are in the case where the modified file (third.t) does not exist in M,
+so we are in case 10 or 11 and we go in deleted_entry. Then, in verify_uptodate_1, we find out the file
+is modified so we abort:
+error: Entry 'submodule/third.t' not uptodate. Cannot merge.
+
+Note: in the second test, in the *child* read-tree called by check_submodule_move_head,
+(at merged_entry:2210), we are in case "14 or 15" (H == M) i.e. file is the same in HEAD and destination commit M (although it is modified in the working tree).
+so we go in keep_entry, and keep_entry does not call verify_uptodate.
+
+The reason why in the end the modified file is overwritten is because
+check_updates always calls submodule_move_head in forced mode (state.force = 1).
+(trace below).
+
+(see also : cd279e2e1b (entry.c: submodule recursing: respect force flag correctly, 2017-04-18), merged in 5f074ca7e8 (Merge branch 'sb/reset-recurse-submodules', 2017-05-29)
+
+ #0  submodule_move_head (path=0x7ffff7bfd108 "submodule", old_head=0x55555589640a "HEAD", new_head=0x55555594ee80 <hexbuffer> "b2073b4c96ebc0a9227203f86fb8bb981982e050", flags=2)
+    at submodule.c:1911
+ #1  0x00005555556ed09f in checkout_entry (ce=0x7ffff7bfd0a0, state=0x7fffffffc390, topath=0x0, nr_checkouts=0x0) at entry.c:485
+ #2  0x000055555580cce3 in check_updates (o=0x7fffffffc710, index=0x7fffffffc970) at unpack-trees.c:472
+ #3  0x000055555580fe0d in unpack_trees (len=2, t=0x7fffffffc690, o=0x7fffffffc710) at unpack-trees.c:1719
+ #4  0x0000555555591628 in merge_working_tree (opts=0x7fffffffcef0, old_branch_info=0x7fffffffcb20, new_branch_info=0x7fffffffcc70, writeout_error=0x7fffffffcaec)
+    at builtin/checkout.c:744
+ #5  0x000055555559270b in switch_branches (opts=0x7fffffffcef0, new_branch_info=0x7fffffffcc70) at builtin/checkout.c:1090
+ #6  0x000055555559364b in checkout_branch (opts=0x7fffffffcef0, new_branch_info=0x7fffffffcc70) at builtin/checkout.c:1493
+ #7  0x0000555555594820 in checkout_main (argc=0, argv=0x7fffffffd588, prefix=0x0, opts=0x7fffffffcef0, options=0x555555989980, usagestr=0x55555592bf50 <checkout_usage>)
+     at builtin/checkout.c:1757
+ #8  0x0000555555594b6a in cmd_checkout (argc=3, argv=0x7fffffffd580, prefix=0x0) at builtin/checkout.c:1805
+ #9  0x00005555555736fc in run_builtin (p=0x55555592e188 <commands+360>, argc=3, argv=0x7fffffffd580) at git.c:450
+ #10 0x0000555555573b67 in handle_builtin (argc=3, argv=0x7fffffffd580) at git.c:700
+ #11 0x0000555555573e34 in run_argv (argcp=0x7fffffffd41c, argv=0x7fffffffd410) at git.c:767
+ #12 0x00005555555742e2 in cmd_main (argc=3, argv=0x7fffffffd580) at git.c:898
+ #13 0x000055555565eb28 in main (argc=4, argv=0x7fffffffd578) at common-main.c:52
+
+I *think* this is normal ? (read 'sb/checkout-recurse-submodules')
+unsure - read cd279e2e1b (entry.c: submodule recursing: respect force flag correctly, 2017-04-18)
+
+Additional note:
+giving '-f' to git checkout activates 'opts->discard_changes'. In merge_working_tree, if this option is active,
+we call reset_tree and return early. The '--force' option is *not* directly propagated down to unpack_trees,
+but in reset_tree, we set opts.reset = 1 (struct unpack_trees_options)
+-> we should use opts.reset = 1, not the 'force' flag to determine if submodule_move_head should be forced
+2022/12/10: inspection shows that all commands set force=1 expect checkout index, which does not support --recurse-submodules

@@ -1,0 +1,65 @@
+For first test:
+
+  │2483                                /* 20 or 21 */
+ >│2484                                return merged_entry(newtree, current, o);
+
+in unpack_trees::twoway_merge
+
+->leads to submodule_move_head in dry-run mode (check_submodule_move_head)
+
+-> we are in case "20 or 21" because submodule commit is different on branch new and branch master
+-> and we are not clean (21). we check if the index and worktree are clean in merged_entry.
+
+in git-read-tree:
+        clean I==H  I==M (H!=M)
+       ------------------
+     20 yes   yes   no      exists   exists   use M
+     21 no    yes   no      exists   exists   fail
+
+For the second test :
+
+- if resetting submodule to tag "first", which is behind what it is on 'master' in the superproject:
+
+-> we are also in merged_entry, but submodule_move_head does not error.
+-> find out why -> because we go in keep_entry which does not call verify_uptodate (see description on kubuntu).
+
+- if resetting submodule to tag 'second', which is the same commit as on HEAD:
+
+   │2469                        } else if ((!oldtree && !newtree) || /* 4 and 5 */
+   │2470                                 (!oldtree && newtree &&
+   │2471                                  same(current, newtree)) || /* 6 and 7 */
+   │2472                                 (oldtree && newtree &&
+   │2473                                  same(oldtree, newtree)) || /* 14 and 15 */
+   │2474                                 (oldtree && newtree &&
+   │2475                                  !same(oldtree, newtree) && /* 18 and 19 */
+   │2476                                  same(current, newtree))) {
+  >│2477                                return keep_entry(current, o);
+
+here it's "14 and 15" that is true. in git-read-tree:
+
+	clean (H==M)
+       ------
+     14 yes                 exists   exists   keep index
+     15 no                  exists   exists   keep index
+
+For 1st bug report:
+- parent is in case 20 or 21 so we go in merged entry
+- child is in case 14 or 15 so we go in keep_entry
+
+For 2nd bug report:
+- parent is in case 10 or 11 so we go in deleted_entry, then verify_uptodate (move from HEAD to old)
+- child is in case 14 or 15 so we go in keep_entry
+
+If submodule is modified, and we switch to a branch where the submodule is at the same commit
+-> it already works (work is not lost), because we go in keep_entry in the parent
+---
+
+See also:
+- a7bc845a9a (unpack-trees: check if we can perform the operation for submodules, 2017-03-14)
+- f0605836b7 (Merge branch 'sb/submodule-update-reset-fix', 2018-01-23) (if forced, we do git read-tree --reset <new>, i.e. no second argument)
+
+THE PLAN:
+- implement --porcelain=$cmd for read-tree x
+- add 'in submodule $sub' to porcelain output
+- optionnaly remove the error in submodule_move_head (quiet flag)  x
+- remove the error ERROR_NOT_UPTODATE in verify_uptodate x
