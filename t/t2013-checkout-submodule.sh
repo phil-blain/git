@@ -20,7 +20,14 @@ test_expect_success 'setup' '
 	git add submodule &&
 	test_tick &&
 	git commit -m updated.superproject &&
-	git tag fourth
+	git tag fourth &&
+	echo modif >submodule/first.t &&
+	git -C submodule add first.t &&
+	test_tick &&
+	git -C submodule commit -m "third" &&
+	git add submodule &&
+	test_tick &&
+	git commit -m "third.superproject"
 '
 
 # TODO: think about moving this test to t7112, and leveraging
@@ -71,16 +78,16 @@ test_expect_success '"checkout HEAD" output honors submodule.*.ignore from .git/
 	test_cmp expect actual
 '
 
-# test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite unstaged changes in submodules' '
-# 	test_when_finished "git reset --hard --recurse-submodules fourth && git clean -dff" &&
-# 	git checkout first &&
-# 	git submodule add ./submodule &&
-# 	echo modif >submodule/second.t &&
-# # 	git -C submodule add third.t && # different error
-# # 	TERM=xterm-256color HOME=/Users/Philippe test_pause &&
-# 	# TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
-# 	test_must_fail git checkout --recurse-submodules master
-# '
+test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite modified files in submodules' '
+	test_when_finished "git reset --hard --recurse-submodules fourth && git clean -dff" &&
+	git checkout first &&
+	git submodule add ./submodule &&
+	echo modif >submodule/second.t &&
+# 	git -C submodule add third.t && # different error
+# 	TERM=xterm-256color HOME=/Users/Philippe test_pause &&
+	# TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
+	test_must_fail git checkout --recurse-submodules master
+'
 
 # "First test"
 test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite unstaged changes in submodules' '
@@ -92,7 +99,7 @@ test_expect_success '"checkout --recurse-submodules <branch>" does not overwrite
 	test_when_finished "git -C submodule checkout -- third.t" &&
 	echo modif >submodule/third.t &&
 # 	git -C submodule add third.t && # different error
-	# TERM=xterm-256color HOME=/Users/Philippe test_pause &&
+	TERM=xterm-256color HOME=/Users/Philippe test_pause &&
 	# TERM=xterm-256color HOME=/Users/Philippe debug git checkout --recurse-submodules master &&
 	test_must_fail git checkout --recurse-submodules master
 '
