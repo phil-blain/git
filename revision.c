@@ -3542,7 +3542,7 @@ void reset_revision_walk(struct rev_info *revs)
 
 void repo_reset_revision_walk(struct repository *r)
 {
-	repo_clear_object_flags(r, SEEN | ADDED | SHOWN | TOPO_WALK_EXPLORED | TOPO_WALK_INDEGREE);
+	repo_clear_object_flags(r, ALL_REV_FLAGS | TOPO_WALK_EXPLORED | TOPO_WALK_INDEGREE);
 }
 
 static int mark_uninteresting(const struct object_id *oid,
