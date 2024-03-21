@@ -2304,7 +2304,6 @@ int cmd_format_patch(int argc, const char **argv, const char *prefix)
 	base = get_base_commit(base_commit, list, nr);
 	if (base) {
 		reset_revision_walk(&rev);
-		repo_clear_object_flags(rev.repo, UNINTERESTING);
 		prepare_bases(&bases, base, list, nr);
 	}
 
