@@ -3,15 +3,6 @@
 identifier f;
 identifier p;
 @@
-  f(..., struct apply_state *p, ...) {<...
-- the_repository
-+ p->repo
-  ...>}
-
-@@
-identifier f;
-identifier p;
-@@
   f(..., struct archiver_args *p, ...) {<...
 - the_repository
 + p->repo

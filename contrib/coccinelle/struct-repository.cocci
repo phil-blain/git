@@ -12,6 +12,15 @@ identifier p;
 identifier f;
 identifier p;
 @@
+  f(..., struct apply_state *p, ...) {<...
+- the_repository
++ p->repo
+  ...>}
+
+@@
+identifier f;
+identifier p;
+@@
   f(..., struct grep_source *p, ...) {<...
 - the_repository
 + p->repo
