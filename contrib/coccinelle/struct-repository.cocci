@@ -30,6 +30,15 @@ identifier p;
 identifier f;
 identifier p;
 @@
+  f(..., struct blame_scoreboard *p, ...) {<...
+- the_repository
++ p->repo
+  ...>}
+
+@@
+identifier f;
+identifier p;
+@@
   f(..., struct grep_source *p, ...) {<...
 - the_repository
 + p->repo
