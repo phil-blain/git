@@ -1654,8 +1654,8 @@ static int do_for_each_ref(struct ref_store *refs, const char *prefix,
 	iter = refs_ref_iterator_begin(refs, prefix, exclude_patterns, trim,
 				       flags);
 
-	return do_for_each_repo_ref_iterator(the_repository, iter,
-					do_for_each_ref_helper, &hp);
+	return do_for_each_repo_ref_iterator(refs->repo, iter,
+					     do_for_each_ref_helper, &hp);
 }
 
 int refs_for_each_ref(struct ref_store *refs, each_ref_fn fn, void *cb_data)
@@ -2522,7 +2522,7 @@ int refs_for_each_reflog(struct ref_store *refs, each_ref_fn fn, void *cb_data)
 
 	iter = refs->be->reflog_iterator_begin(refs);
 
-	return do_for_each_repo_ref_iterator(the_repository, iter,
+	return do_for_each_repo_ref_iterator(refs->repo, iter,
 					     do_for_each_ref_helper, &hp);
 }
 
