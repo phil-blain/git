@@ -36,6 +36,15 @@ identifier p;
   ...>}
 
 @@
+identifier f != show_local_changes;
+identifier p;
+@@
+  f(..., struct diff_options *p, ...) {<...
+- the_repository
++ p->repo
+  ...>}
+
+@@
 identifier f;
 identifier p;
 @@

@@ -1038,7 +1038,7 @@ static void fill_origin_blob(struct diff_options *opt,
 				    &o->blob_oid, 1, &file->ptr, &file_size))
 			;
 		else
-			file->ptr = repo_read_object_file(the_repository,
+			file->ptr = repo_read_object_file(opt->repo,
 							  &o->blob_oid, &type,
 							  &file_size);
 		file->size = file_size;
