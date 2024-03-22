@@ -3,15 +3,6 @@
 identifier f;
 identifier p;
 @@
-  f(..., struct notes_merge_options *p, ...) {<...
-- the_repository
-+ p->repo
-  ...>}
-
-@@
-identifier f;
-identifier p;
-@@
   f(..., struct packing_data *p, ...) {<...
 - the_repository
 + p->repo
