@@ -3209,13 +3209,13 @@ static int apply_binary(struct apply_state *state,
 		return 0; /* deletion patch */
 	}
 
-	if (has_object(the_repository, &oid, 0)) {
+	if (has_object(state->repo, &oid, 0)) {
 		/* We already have the postimage */
 		enum object_type type;
 		unsigned long size;
 		char *result;
 
-		result = repo_read_object_file(the_repository, &oid, &type,
+		result = repo_read_object_file(state->repo, &oid, &type,
 					       &size);
 		if (!result)
 			return error(_("the necessary postimage %s for "
@@ -3627,7 +3627,7 @@ static int try_threeway(struct apply_state *state,
 	/* Preimage the patch was prepared for */
 	if (patch->is_new)
 		write_object_file("", 0, OBJ_BLOB, &pre_oid);
-	else if (repo_get_oid(the_repository, patch->old_oid_prefix, &pre_oid) ||
+	else if (repo_get_oid(state->repo, patch->old_oid_prefix, &pre_oid) ||
 		 read_blob_object(&buf, &pre_oid, patch->old_mode))
 		return error(_("repository lacks the necessary blob to perform 3-way merge."));
 
@@ -4144,7 +4144,7 @@ static int build_fake_ancestor(struct apply_state *state, struct patch *list)
 			else
 				return error(_("sha1 information is lacking or "
 					       "useless for submodule %s"), name);
-		} else if (!repo_get_oid_blob(the_repository, patch->old_oid_prefix, &oid)) {
+		} else if (!repo_get_oid_blob(state->repo, patch->old_oid_prefix, &oid)) {
 			; /* ok */
 		} else if (!patch->lines_added && !patch->lines_deleted) {
 			/* mode-only change: update the current */
