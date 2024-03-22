@@ -66,6 +66,15 @@ identifier p;
 identifier f;
 identifier p;
 @@
+  f(..., struct merge_options *p, ...) {<...
+- the_repository
++ p->repo
+  ...>}
+
+@@
+identifier f;
+identifier p;
+@@
   f(..., struct submodule_tree_entry *p, ...) {<...
 - the_repository
 + p->repo

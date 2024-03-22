@@ -245,9 +245,9 @@ static struct commit *pick_regular_commit(struct commit *pickme,
 	base = pickme->parents->item;
 	replayed_base = mapped_commit(replayed_commits, base, onto);
 
-	result->tree = repo_get_commit_tree(the_repository, replayed_base);
-	pickme_tree = repo_get_commit_tree(the_repository, pickme);
-	base_tree = repo_get_commit_tree(the_repository, base);
+	result->tree = repo_get_commit_tree(merge_opt->repo, replayed_base);
+	pickme_tree = repo_get_commit_tree(merge_opt->repo, pickme);
+	base_tree = repo_get_commit_tree(merge_opt->repo, base);
 
 	merge_opt->branch1 = short_commit_name(replayed_base);
 	merge_opt->branch2 = short_commit_name(pickme);
