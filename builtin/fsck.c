@@ -789,7 +789,7 @@ static int fsck_resolve_undo(struct index_state *istate,
 			if (!ru->mode[i] || !S_ISREG(ru->mode[i]))
 				continue;
 
-			obj = parse_object(the_repository, &ru->oid[i]);
+			obj = parse_object(istate->repo, &ru->oid[i]);
 			if (!obj) {
 				error(_("%s: invalid sha1 pointer in resolve-undo of %s"),
 				      oid_to_hex(&ru->oid[i]),
@@ -821,7 +821,7 @@ static void fsck_index(struct index_state *istate, const char *index_path,
 		mode = istate->cache[i]->ce_mode;
 		if (S_ISGITLINK(mode))
 			continue;
-		blob = lookup_blob(the_repository,
+		blob = lookup_blob(istate->repo,
 				   &istate->cache[i]->oid);
 		if (!blob)
 			continue;

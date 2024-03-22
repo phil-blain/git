@@ -1926,7 +1926,7 @@ static enum path_treatment treat_directory(struct dir_struct *dir,
 			char *real_dirname, *real_gitdir;
 			strbuf_addstr(&sb, ".git");
 			real_dirname = real_pathdup(sb.buf, 1);
-			real_gitdir = real_pathdup(the_repository->gitdir, 1);
+			real_gitdir = real_pathdup(istate->repo->gitdir, 1);
 
 			nested_repo = !!strcmp(real_dirname, real_gitdir);
 			free(real_gitdir);

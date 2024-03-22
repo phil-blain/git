@@ -345,11 +345,11 @@ static void load_gitmodules_file(struct index_state *index,
 	if (pos >= 0) {
 		struct cache_entry *ce = index->cache[pos];
 		if (!state && ce->ce_flags & CE_WT_REMOVE) {
-			repo_read_gitmodules(the_repository, 0);
+			repo_read_gitmodules(index->repo, 0);
 		} else if (state && (ce->ce_flags & CE_UPDATE)) {
-			submodule_free(the_repository);
+			submodule_free(index->repo);
 			checkout_entry(ce, state, NULL, NULL);
-			repo_read_gitmodules(the_repository, 0);
+			repo_read_gitmodules(index->repo, 0);
 		}
 	}
 }
@@ -467,7 +467,7 @@ static int check_updates(struct unpack_trees_options *o,
 	if (should_update_submodules())
 		load_gitmodules_file(index, &state);
 
-	if (repo_has_promisor_remote(the_repository))
+	if (repo_has_promisor_remote(index->repo))
 		/*
 		 * Prefetch the objects that are to be checked out in the loop
 		 * below.
@@ -1772,14 +1772,14 @@ static int clear_ce_flags(struct index_state *istate,
 
 	xsnprintf(label, sizeof(label), "clear_ce_flags(0x%08lx,0x%08lx)",
 		  (unsigned long)select_mask, (unsigned long)clear_mask);
-	trace2_region_enter("unpack_trees", label, the_repository);
+	trace2_region_enter("unpack_trees", label, istate->repo);
 	rval = clear_ce_flags_1(istate,
 				istate->cache,
 				istate->cache_nr,
 				&prefix,
 				select_mask, clear_mask,
 				pl, 0, 0);
-	trace2_region_leave("unpack_trees", label, the_repository);
+	trace2_region_leave("unpack_trees", label, istate->repo);
 
 	stop_progress(&istate->progress);
 	return rval;
