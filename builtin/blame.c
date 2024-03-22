@@ -855,7 +855,7 @@ static void build_ignorelist(struct blame_scoreboard *sb,
 						    peel_to_commit_oid, sb);
 	}
 	for_each_string_list_item(i, ignore_rev_list) {
-		if (repo_get_oid_committish(the_repository, i->string, &oid) ||
+		if (repo_get_oid_committish(sb->repo, i->string, &oid) ||
 		    peel_to_commit_oid(&oid, sb))
 			die(_("cannot find revision %s to ignore"), i->string);
 		oidset_insert(&sb->ignore_list, &oid);

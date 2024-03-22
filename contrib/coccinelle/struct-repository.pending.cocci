@@ -3,15 +3,6 @@
 identifier f;
 identifier p;
 @@
-  f(..., struct blame_scoreboard *p, ...) {<...
-- the_repository
-+ p->repo
-  ...>}
-
-@@
-identifier f;
-identifier p;
-@@
   f(..., struct diff_options *p, ...) {<...
 - the_repository
 + p->repo
