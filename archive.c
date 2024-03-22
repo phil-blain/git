@@ -94,7 +94,7 @@ static void *object_file_to_archive(const struct archiver_args *args,
 			       (args->tree ? &args->tree->object.oid : NULL), oid);
 
 	path += args->baselen;
-	buffer = repo_read_object_file(the_repository, oid, type, sizep);
+	buffer = repo_read_object_file(args->repo, oid, type, sizep);
 	if (buffer && S_ISREG(mode)) {
 		struct strbuf buf = STRBUF_INIT;
 		size_t size = 0;
@@ -512,14 +512,14 @@ static void parse_treeish_arg(const char **argv,
 		const char *colon = strchrnul(name, ':');
 		int refnamelen = colon - name;
 
-		if (!repo_dwim_ref(the_repository, name, refnamelen, &oid, &ref, 0))
+		if (!repo_dwim_ref(ar_args->repo, name, refnamelen, &oid, &ref, 0))
 			die(_("no such ref: %.*s"), refnamelen, name);
 	} else {
-		repo_dwim_ref(the_repository, name, strlen(name), &oid, &ref,
+		repo_dwim_ref(ar_args->repo, name, strlen(name), &oid, &ref,
 			      0);
 	}
 
-	if (repo_get_oid(the_repository, name, &oid))
+	if (repo_get_oid(ar_args->repo, name, &oid))
 		die(_("not a valid object name: %s"), name);
 
 	commit = lookup_commit_reference_gently(ar_args->repo, &oid, 1);

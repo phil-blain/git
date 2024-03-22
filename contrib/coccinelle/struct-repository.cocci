@@ -21,6 +21,15 @@ identifier p;
 identifier f;
 identifier p;
 @@
+  f(..., struct archiver_args *p, ...) {<...
+- the_repository
++ p->repo
+  ...>}
+
+@@
+identifier f;
+identifier p;
+@@
   f(..., struct grep_source *p, ...) {<...
 - the_repository
 + p->repo
