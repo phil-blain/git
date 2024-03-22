@@ -1,4 +1,5 @@
 #include "git-compat-util.h"
+#include "read-cache-ll.h"
 #include "merge-ll.h"
 #include "blob.h"
 #include "merge-blobs.h"
@@ -77,7 +78,7 @@ void *merge_blobs(struct index_state *istate, const char *path,
 			return NULL;
 		if (!our)
 			our = their;
-		return repo_read_object_file(the_repository, &our->object.oid,
+		return repo_read_object_file(istate->repo, &our->object.oid,
 					     &type, size);
 	}
 

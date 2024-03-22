@@ -970,7 +970,7 @@ static int handle_cache(struct index_state *istate,
 			break;
 		i = ce_stage(ce) - 1;
 		if (!mmfile[i].ptr) {
-			mmfile[i].ptr = repo_read_object_file(the_repository,
+			mmfile[i].ptr = repo_read_object_file(istate->repo,
 							      &ce->oid, &type,
 							      &size);
 			if (!mmfile[i].ptr)

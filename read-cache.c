@@ -1950,7 +1950,7 @@ static void check_ce_order(struct index_state *istate)
 
 static void tweak_untracked_cache(struct index_state *istate)
 {
-	struct repository *r = the_repository;
+	struct repository *r = istate->repo;
 
 	prepare_repo_settings(r);
 
@@ -2355,9 +2355,9 @@ int do_read_index(struct index_state *istate, const char *path, int must_exist)
 	 * TODO trace2: replace "the_repository" with the actual repo instance
 	 * that is associated with the given "istate".
 	 */
-	trace2_data_intmax("index", the_repository, "read/version",
+	trace2_data_intmax("index", istate->repo, "read/version",
 			   istate->version);
-	trace2_data_intmax("index", the_repository, "read/cache_nr",
+	trace2_data_intmax("index", istate->repo, "read/cache_nr",
 			   istate->cache_nr);
 
 	/*
@@ -2406,12 +2406,12 @@ int read_index_from(struct index_state *istate, const char *path,
 	 * TODO trace2: replace "the_repository" with the actual repo instance
 	 * that is associated with the given "istate".
 	 */
-	trace2_region_enter_printf("index", "do_read_index", the_repository,
+	trace2_region_enter_printf("index", "do_read_index", istate->repo,
 				   "%s", path);
 	trace_performance_enter();
 	ret = do_read_index(istate, path, 0);
 	trace_performance_leave("read cache %s", path);
-	trace2_region_leave_printf("index", "do_read_index", the_repository,
+	trace2_region_leave_printf("index", "do_read_index", istate->repo,
 				   "%s", path);
 
 	split_index = istate->split_index;
@@ -2431,21 +2431,21 @@ int read_index_from(struct index_state *istate, const char *path,
 	base_path = xstrfmt("%s/sharedindex.%s", gitdir, base_oid_hex);
 	if (file_exists(base_path)) {
 		trace2_region_enter_printf("index", "shared/do_read_index",
-					the_repository, "%s", base_path);
+					istate->repo, "%s", base_path);
 
 		ret = do_read_index(split_index->base, base_path, 0);
 		trace2_region_leave_printf("index", "shared/do_read_index",
-					the_repository, "%s", base_path);
+					istate->repo, "%s", base_path);
 	} else {
 		char *path_copy = xstrdup(path);
 		char *base_path2 = xstrfmt("%s/sharedindex.%s",
 					   dirname(path_copy), base_oid_hex);
 		free(path_copy);
 		trace2_region_enter_printf("index", "shared/do_read_index",
-					   the_repository, "%s", base_path2);
+					   istate->repo, "%s", base_path2);
 		ret = do_read_index(split_index->base, base_path2, 1);
 		trace2_region_leave_printf("index", "shared/do_read_index",
-					   the_repository, "%s", base_path2);
+					   istate->repo, "%s", base_path2);
 		free(base_path2);
 	}
 	if (!oideq(&split_index->base_oid, &split_index->base->oid))
@@ -3128,9 +3128,9 @@ static int do_write_index(struct index_state *istate, struct tempfile *tempfile,
 	 * TODO trace2: replace "the_repository" with the actual repo instance
 	 * that is associated with the given "istate".
 	 */
-	trace2_data_intmax("index", the_repository, "write/version",
+	trace2_data_intmax("index", istate->repo, "write/version",
 			   istate->version);
-	trace2_data_intmax("index", the_repository, "write/cache_nr",
+	trace2_data_intmax("index", istate->repo, "write/cache_nr",
 			   istate->cache_nr);
 
 	return 0;
@@ -3168,10 +3168,10 @@ static int do_write_locked_index(struct index_state *istate,
 	 * TODO trace2: replace "the_repository" with the actual repo instance
 	 * that is associated with the given "istate".
 	 */
-	trace2_region_enter_printf("index", "do_write_index", the_repository,
+	trace2_region_enter_printf("index", "do_write_index", istate->repo,
 				   "%s", get_lock_file_path(lock));
 	ret = do_write_index(istate, lock->tempfile, write_extensions, flags);
-	trace2_region_leave_printf("index", "do_write_index", the_repository,
+	trace2_region_leave_printf("index", "do_write_index", istate->repo,
 				   "%s", get_lock_file_path(lock));
 
 	if (was_full)
@@ -3273,10 +3273,12 @@ static int write_shared_index(struct index_state *istate,
 	convert_to_sparse(istate, 0);
 
 	trace2_region_enter_printf("index", "shared/do_write_index",
-				   the_repository, "%s", get_tempfile_path(*temp));
+				   istate->repo, "%s",
+				   get_tempfile_path(*temp));
 	ret = do_write_index(si->base, *temp, WRITE_NO_EXTENSION, flags);
 	trace2_region_leave_printf("index", "shared/do_write_index",
-				   the_repository, "%s", get_tempfile_path(*temp));
+				   istate->repo, "%s",
+				   get_tempfile_path(*temp));
 
 	if (was_full)
 		ensure_full_index(istate);
@@ -3335,7 +3337,7 @@ int write_locked_index(struct index_state *istate, struct lock_file *lock,
 	struct split_index *si = istate->split_index;
 
 	if (git_env_bool("GIT_TEST_CHECK_CACHE_TREE", 0))
-		cache_tree_verify(the_repository, istate);
+		cache_tree_verify(istate->repo, istate);
 
 	if ((flags & SKIP_IF_UNCHANGED) && !istate->cache_changed) {
 		if (flags & COMMIT_LOCK)
@@ -3500,7 +3502,7 @@ void *read_blob_data_from_index(struct index_state *istate,
 	}
 	if (pos < 0)
 		return NULL;
-	data = repo_read_object_file(the_repository, &istate->cache[pos]->oid,
+	data = repo_read_object_file(istate->repo, &istate->cache[pos]->oid,
 				     &type, &sz);
 	if (!data || type != OBJ_BLOB) {
 		free(data);
@@ -3744,13 +3746,13 @@ void prefetch_cache_entries(const struct index_state *istate,
 
 		if (S_ISGITLINK(ce->ce_mode) || !must_prefetch(ce))
 			continue;
-		if (!oid_object_info_extended(the_repository, &ce->oid,
+		if (!oid_object_info_extended(istate->repo, &ce->oid,
 					      NULL,
 					      OBJECT_INFO_FOR_PREFETCH))
 			continue;
 		oid_array_append(&to_fetch, &ce->oid);
 	}
-	promisor_remote_get_direct(the_repository,
+	promisor_remote_get_direct(istate->repo,
 				   to_fetch.oid, to_fetch.nr);
 	oid_array_clear(&to_fetch);
 }
@@ -3821,7 +3823,7 @@ void overlay_tree_on_index(struct index_state *istate,
 	read_tree_fn_t fn = NULL;
 	int err;
 
-	if (repo_get_oid(the_repository, tree_name, &oid))
+	if (repo_get_oid(istate->repo, tree_name, &oid))
 		die("tree-ish %s not found.", tree_name);
 	tree = parse_tree_indirect(&oid);
 	if (!tree)
@@ -3858,7 +3860,7 @@ void overlay_tree_on_index(struct index_state *istate,
 
 	if (!fn)
 		fn = read_one_entry_quick;
-	err = read_tree(the_repository, tree, &pathspec, fn, istate);
+	err = read_tree(istate->repo, tree, &pathspec, fn, istate);
 	clear_pathspec(&pathspec);
 	if (err)
 		die("unable to read tree entries %s", tree_name);
