@@ -569,7 +569,7 @@ static int grep_cache(struct grep_opt *opt,
 			void *data;
 			unsigned long size;
 
-			data = repo_read_object_file(the_repository, &ce->oid,
+			data = repo_read_object_file(opt->repo, &ce->oid,
 						     &type, &size);
 			if (!data)
 				die(_("unable to read tree %s"), oid_to_hex(&ce->oid));
@@ -662,7 +662,7 @@ static int grep_tree(struct grep_opt *opt, const struct pathspec *pathspec,
 			void *data;
 			unsigned long size;
 
-			data = repo_read_object_file(the_repository,
+			data = repo_read_object_file(opt->repo,
 						     &entry.oid, &type, &size);
 			if (!data)
 				die(_("unable to read tree (%s)"),
