@@ -3,15 +3,6 @@
 identifier f;
 identifier p;
 @@
-  f(..., struct packing_data *p, ...) {<...
-- the_repository
-+ p->repo
-  ...>}
-
-@@
-identifier f;
-identifier p;
-@@
   f(..., struct index_state *p, ...) {<...
 - the_repository
 + p->repo
