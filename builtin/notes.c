@@ -818,11 +818,11 @@ static int merge_commit(struct notes_merge_options *o)
 	 * and target notes ref from .git/NOTES_MERGE_REF.
 	 */
 
-	if (repo_get_oid(the_repository, "NOTES_MERGE_PARTIAL", &oid))
+	if (repo_get_oid(o->repo, "NOTES_MERGE_PARTIAL", &oid))
 		die(_("failed to read ref NOTES_MERGE_PARTIAL"));
-	else if (!(partial = lookup_commit_reference(the_repository, &oid)))
+	else if (!(partial = lookup_commit_reference(o->repo, &oid)))
 		die(_("could not find commit from NOTES_MERGE_PARTIAL."));
-	else if (repo_parse_commit(the_repository, partial))
+	else if (repo_parse_commit(o->repo, partial))
 		die(_("could not parse commit from NOTES_MERGE_PARTIAL."));
 
 	if (partial->parents)
@@ -843,7 +843,7 @@ static int merge_commit(struct notes_merge_options *o)
 
 	/* Reuse existing commit message in reflog message */
 	memset(&pretty_ctx, 0, sizeof(pretty_ctx));
-	repo_format_commit_message(the_repository, partial, "%s", &msg,
+	repo_format_commit_message(o->repo, partial, "%s", &msg,
 				   &pretty_ctx);
 	strbuf_trim(&msg);
 	strbuf_insertstr(&msg, 0, "notes: ");
