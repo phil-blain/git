@@ -199,7 +199,7 @@ int register_all_submodule_odb_as_alternates(void)
 void set_diffopt_flags_from_submodule_config(struct diff_options *diffopt,
 					     const char *path)
 {
-	const struct submodule *submodule = submodule_from_path(the_repository,
+	const struct submodule *submodule = submodule_from_path(diffopt->repo,
 								null_oid(),
 								path);
 	if (submodule) {
@@ -207,13 +207,13 @@ void set_diffopt_flags_from_submodule_config(struct diff_options *diffopt,
 		char *key;
 
 		key = xstrfmt("submodule.%s.ignore", submodule->name);
-		if (repo_config_get_string_tmp(the_repository, key, &ignore))
+		if (repo_config_get_string_tmp(diffopt->repo, key, &ignore))
 			ignore = submodule->ignore;
 		free(key);
 
 		if (ignore)
 			handle_ignore_submodules_arg(diffopt, ignore);
-		else if (is_gitmodules_unmerged(the_repository->index))
+		else if (is_gitmodules_unmerged(diffopt->repo->index))
 			diffopt->flags.ignore_submodules = 1;
 	}
 }

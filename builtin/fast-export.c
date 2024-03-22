@@ -429,7 +429,7 @@ static const char *anonymize_oid(const char *oid_hex)
 }
 
 static void show_filemodify(struct diff_queue_struct *q,
-			    struct diff_options *options UNUSED, void *data)
+			    struct diff_options *options, void *data)
 {
 	int i;
 	struct string_list *changed = data;
@@ -488,7 +488,7 @@ static void show_filemodify(struct diff_queue_struct *q,
 				       anonymize_oid(oid_to_hex(&spec->oid)) :
 				       oid_to_hex(&spec->oid));
 			else {
-				struct object *object = lookup_object(the_repository,
+				struct object *object = lookup_object(options->repo,
 								      &spec->oid);
 				printf("M %06o :%d ", spec->mode,
 				       get_object_mark(object));

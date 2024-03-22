@@ -980,7 +980,7 @@ static void setup_additional_headers(struct diff_options *o,
 	o->additional_path_headers = xmalloc(sizeof(struct strmap));
 	strmap_init_with_options(o->additional_path_headers, NULL, 0);
 	strmap_for_each_entry(all_headers, &iter, entry) {
-		if (match_pathspec(the_repository->index, &o->pathspec,
+		if (match_pathspec(o->repo->index, &o->pathspec,
 				   entry->key, strlen(entry->key),
 				   0 /* prefix */, NULL /* seen */,
 				   0 /* is_dir */))

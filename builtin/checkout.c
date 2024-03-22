@@ -654,7 +654,7 @@ static void show_local_changes(struct object *head,
 {
 	struct rev_info rev;
 	/* I think we want full paths, even if we're in a subdirectory. */
-	repo_init_revisions(the_repository, &rev, NULL);
+	repo_init_revisions(opts->repo, &rev, NULL);
 	rev.diffopt.flags = opts->flags;
 	rev.diffopt.output_format |= DIFF_FORMAT_NAME_STATUS;
 	rev.diffopt.flags.recursive = 1;
