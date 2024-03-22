@@ -369,7 +369,7 @@ static void repo_output_commit_title(struct merge_options *opt,
 
 static void output_commit_title(struct merge_options *opt, struct commit *commit)
 {
-	repo_output_commit_title(opt, the_repository, commit);
+	repo_output_commit_title(opt, opt->repo, commit);
 }
 
 static int add_cacheinfo(struct merge_options *opt,
@@ -955,7 +955,7 @@ static int update_file_flags(struct merge_options *opt,
 			goto update_index;
 		}
 
-		buf = repo_read_object_file(the_repository, &contents->oid,
+		buf = repo_read_object_file(opt->repo, &contents->oid,
 					    &type, &size);
 		if (!buf) {
 			ret = err(opt, _("cannot read object %s '%s'"),
@@ -3026,7 +3026,7 @@ static int read_oid_strbuf(struct merge_options *opt,
 	void *buf;
 	enum object_type type;
 	unsigned long size;
-	buf = repo_read_object_file(the_repository, oid, &type, &size);
+	buf = repo_read_object_file(opt->repo, oid, &type, &size);
 	if (!buf)
 		return err(opt, _("cannot read object %s"), oid_to_hex(oid));
 	if (type != OBJ_BLOB) {
@@ -3597,7 +3597,7 @@ static int merge_recursive_internal(struct merge_options *opt,
 	}
 
 	if (!merge_bases) {
-		merge_bases = repo_get_merge_bases(the_repository, h1, h2);
+		merge_bases = repo_get_merge_bases(opt->repo, h1, h2);
 		merge_bases = reverse_commit_list(merge_bases);
 	}
 
