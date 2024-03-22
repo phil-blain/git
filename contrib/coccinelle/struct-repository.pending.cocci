@@ -1,13 +1,3 @@
-// structs containing a struct repository*
-@@
-identifier f;
-identifier p;
-@@
-  f(..., struct wt_status *p, ...) {<...
-- the_repository
-+ p->repo
-  ...>}
-
 // structs containing one of the structs above
 // (struct repository* is a member of a member)
 @@

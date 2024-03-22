@@ -124,3 +124,12 @@ identifier p;
 - the_repository
 + p->repo
   ...>}
+
+@@
+identifier f != status_init_config;
+identifier p;
+@@
+  f(..., struct wt_status *p, ...) {<...
+- the_repository
++ p->repo
+  ...>}

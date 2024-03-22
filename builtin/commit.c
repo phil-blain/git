@@ -198,9 +198,9 @@ static int opt_parse_rename_score(const struct option *opt, const char *arg, int
 
 static void determine_whence(struct wt_status *s)
 {
-	if (file_exists(git_path_merge_head(the_repository)))
+	if (file_exists(git_path_merge_head(s->repo)))
 		whence = FROM_MERGE;
-	else if (!sequencer_determine_whence(the_repository, &whence))
+	else if (!sequencer_determine_whence(s->repo, &whence))
 		whence = FROM_COMMIT;
 	if (s)
 		s->whence = whence;
@@ -558,7 +558,7 @@ static int run_status(FILE *fp, const char *index_file, const char *prefix, int 
 	s->index_file = index_file;
 	s->fp = fp;
 	s->nowarn = nowarn;
-	s->is_initial = repo_get_oid(the_repository, s->reference, &oid) ? 1 : 0;
+	s->is_initial = repo_get_oid(s->repo, s->reference, &oid) ? 1 : 0;
 	if (!s->is_initial)
 		oidcpy(&s->oid_commit, &oid);
 	s->status_format = status_format;
@@ -761,7 +761,7 @@ static int prepare_to_commit(const char *index_file, const char *prefix,
 			if (!c)
 				die(_("could not lookup commit '%s'"), squash_message);
 			ctx.output_encoding = get_commit_output_encoding();
-			repo_format_commit_message(the_repository, c,
+			repo_format_commit_message(s->repo, c,
 						   "squash! %s\n\n", &sb,
 						   &ctx);
 		}
@@ -797,7 +797,7 @@ static int prepare_to_commit(const char *index_file, const char *prefix,
 			die(_("could not lookup commit '%s'"), fixup_commit);
 		ctx.output_encoding = get_commit_output_encoding();
 		fmt = xstrfmt("%s! %%s\n\n", fixup_prefix);
-		repo_format_commit_message(the_repository, commit, fmt, &sb,
+		repo_format_commit_message(s->repo, commit, fmt, &sb,
 					   &ctx);
 		free(fmt);
 		hook_arg1 = "message";
@@ -819,22 +819,22 @@ static int prepare_to_commit(const char *index_file, const char *prefix,
 				die(_("options '%s' and '%s:%s' cannot be used together"), "-m", "--fixup", fixup_message);
 			prepare_amend_commit(commit, &sb, &ctx);
 		}
-	} else if (!stat(git_path_merge_msg(the_repository), &statbuf)) {
+	} else if (!stat(git_path_merge_msg(s->repo), &statbuf)) {
 		size_t merge_msg_start;
 
 		/*
 		 * prepend SQUASH_MSG here if it exists and a
 		 * "merge --squash" was originally performed
 		 */
-		if (!stat(git_path_squash_msg(the_repository), &statbuf)) {
-			if (strbuf_read_file(&sb, git_path_squash_msg(the_repository), 0) < 0)
+		if (!stat(git_path_squash_msg(s->repo), &statbuf)) {
+			if (strbuf_read_file(&sb, git_path_squash_msg(s->repo), 0) < 0)
 				die_errno(_("could not read SQUASH_MSG"));
 			hook_arg1 = "squash";
 		} else
 			hook_arg1 = "merge";
 
 		merge_msg_start = sb.len;
-		if (strbuf_read_file(&sb, git_path_merge_msg(the_repository), 0) < 0)
+		if (strbuf_read_file(&sb, git_path_merge_msg(s->repo), 0) < 0)
 			die_errno(_("could not read MERGE_MSG"));
 
 		if (cleanup_mode == COMMIT_MSG_CLEANUP_SCISSORS &&
@@ -842,8 +842,8 @@ static int prepare_to_commit(const char *index_file, const char *prefix,
 					 sb.len - merge_msg_start) <
 				sb.len - merge_msg_start)
 			merge_contains_scissors = 1;
-	} else if (!stat(git_path_squash_msg(the_repository), &statbuf)) {
-		if (strbuf_read_file(&sb, git_path_squash_msg(the_repository), 0) < 0)
+	} else if (!stat(git_path_squash_msg(s->repo), &statbuf)) {
+		if (strbuf_read_file(&sb, git_path_squash_msg(s->repo), 0) < 0)
 			die_errno(_("could not read SQUASH_MSG"));
 		hook_arg1 = "squash";
 	} else if (template_file) {
@@ -994,13 +994,13 @@ static int prepare_to_commit(const char *index_file, const char *prefix,
 		struct object_id oid;
 		const char *parent = "HEAD";
 
-		if (!the_index.initialized && repo_read_index(the_repository) < 0)
+		if (!the_index.initialized && repo_read_index(s->repo) < 0)
 			die(_("Cannot read index"));
 
 		if (amend)
 			parent = "HEAD^1";
 
-		if (repo_get_oid(the_repository, parent, &oid)) {
+		if (repo_get_oid(s->repo, parent, &oid)) {
 			int i, ita_nr = 0;
 
 			/* TODO: audit for interaction with sparse-index. */
@@ -1024,7 +1024,7 @@ static int prepare_to_commit(const char *index_file, const char *prefix,
 			if (ignore_submodule_arg &&
 			    !strcmp(ignore_submodule_arg, "all"))
 				flags.ignore_submodules = 1;
-			committable = index_differs_from(the_repository,
+			committable = index_differs_from(s->repo,
 							 parent, &flags, 1);
 		}
 	}
