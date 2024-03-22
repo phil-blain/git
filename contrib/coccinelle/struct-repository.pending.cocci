@@ -3,15 +3,6 @@
 identifier f;
 identifier p;
 @@
-  f(..., struct ref_store *p, ...) {<...
-- the_repository
-+ p->repo
-  ...>}
-
-@@
-identifier f;
-identifier p;
-@@
   f(..., struct rev_info *p, ...) {<...
 - the_repository
 + p->repo
