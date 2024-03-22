@@ -954,11 +954,11 @@ static void show_combined_header(struct combine_diff_path *elem,
 			 "", elem->path, line_prefix, c_meta, c_reset);
 	printf("%s%sindex ", line_prefix, c_meta);
 	for (i = 0; i < num_parent; i++) {
-		abb = repo_find_unique_abbrev(the_repository,
+		abb = repo_find_unique_abbrev(rev->repo,
 					      &elem->parent[i].oid, abbrev);
 		printf("%s%s", i ? "," : "", abb);
 	}
-	abb = repo_find_unique_abbrev(the_repository, &elem->oid, abbrev);
+	abb = repo_find_unique_abbrev(rev->repo, &elem->oid, abbrev);
 	printf("..%s%s\n", abb, c_reset);
 
 	if (mode_differs) {

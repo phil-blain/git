@@ -356,7 +356,7 @@ static void shortlog(const char *name,
 	const struct object_id *oid = &origin_data->oid;
 	int limit = opts->shortlog_len;
 
-	branch = deref_tag(the_repository, parse_object(the_repository, oid),
+	branch = deref_tag(rev->repo, parse_object(rev->repo, oid),
 			   oid_to_hex(oid),
 			   the_hash_algo->hexsz);
 	if (!branch || branch->type != OBJ_COMMIT)
@@ -386,7 +386,7 @@ static void shortlog(const char *name,
 		if (subjects.nr > limit)
 			continue;
 
-		repo_format_commit_message(the_repository, commit, "%s", &sb,
+		repo_format_commit_message(rev->repo, commit, "%s", &sb,
 					   &ctx);
 		strbuf_ltrim(&sb);
 

@@ -108,6 +108,15 @@ identifier p;
   ...>}
 
 @@
+identifier f != {handle_revision_pseudo_opt, prepare_revs};
+identifier p;
+@@
+  f(..., struct rev_info *p, ...) {<...
+- the_repository
++ p->repo
+  ...>}
+
+@@
 identifier f;
 identifier p;
 @@

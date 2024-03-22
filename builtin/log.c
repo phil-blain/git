@@ -527,7 +527,7 @@ static int cmd_log_walk_no_free(struct rev_info *rev)
 			 * We may show a given commit multiple times when
 			 * walking the reflogs.
 			 */
-			free_commit_buffer(the_repository->parsed_objects,
+			free_commit_buffer(rev->repo->parsed_objects,
 					   commit);
 			free_commit_list(commit->parents);
 			commit->parents = NULL;
@@ -665,12 +665,12 @@ static int show_blob_object(const struct object_id *oid, struct rev_info *rev, c
 	    !rev->diffopt.flags.allow_textconv)
 		return stream_blob_to_fd(1, oid, NULL, 0);
 
-	if (get_oid_with_context(the_repository, obj_name,
+	if (get_oid_with_context(rev->repo, obj_name,
 				 GET_OID_RECORD_PATH,
 				 &oidc, &obj_context))
 		die(_("not a valid object name %s"), obj_name);
 	if (!obj_context.path ||
-	    !textconv_object(the_repository, obj_context.path,
+	    !textconv_object(rev->repo, obj_context.path,
 			     obj_context.mode, &oidc, 1, &buf, &size)) {
 		free(obj_context.path);
 		return stream_blob_to_fd(1, oid, NULL, 0);
@@ -688,7 +688,7 @@ static int show_tag_object(const struct object_id *oid, struct rev_info *rev)
 {
 	unsigned long size;
 	enum object_type type;
-	char *buf = repo_read_object_file(the_repository, oid, &type, &size);
+	char *buf = repo_read_object_file(rev->repo, oid, &type, &size);
 	int offset = 0;
 
 	if (!buf)
@@ -1160,16 +1160,16 @@ static void get_patch_ids(struct rev_info *rev, struct patch_ids *ids)
 	o2 = rev->pending.objects[1].item;
 	flags1 = o1->flags;
 	flags2 = o2->flags;
-	c1 = lookup_commit_reference(the_repository, &o1->oid);
-	c2 = lookup_commit_reference(the_repository, &o2->oid);
+	c1 = lookup_commit_reference(rev->repo, &o1->oid);
+	c2 = lookup_commit_reference(rev->repo, &o2->oid);
 
 	if ((flags1 & UNINTERESTING) == (flags2 & UNINTERESTING))
 		die(_("not a range"));
 
-	init_patch_ids(the_repository, ids);
+	init_patch_ids(rev->repo, ids);
 
 	/* given a range a..b get all patch ids for b..a */
-	repo_init_revisions(the_repository, &check_rev, rev->prefix);
+	repo_init_revisions(rev->repo, &check_rev, rev->prefix);
 	check_rev.max_parents = 1;
 	o1->flags ^= UNINTERESTING;
 	o2->flags ^= UNINTERESTING;
@@ -1229,7 +1229,7 @@ static char *find_branch_name(struct rev_info *rev)
 		return NULL;
 	ref = rev->cmdline.rev[positive].name;
 	tip_oid = &rev->cmdline.rev[positive].item->oid;
-	if (repo_dwim_ref(the_repository, ref, strlen(ref), &branch_oid,
+	if (repo_dwim_ref(rev->repo, ref, strlen(ref), &branch_oid,
 			  &full_ref, 0) &&
 	    skip_prefix(full_ref, "refs/heads/", &v) &&
 	    oideq(tip_oid, &branch_oid))
@@ -1351,11 +1351,11 @@ static void make_cover_letter(struct rev_info *rev, int use_separate_file,
 	log_write_email_headers(rev, head, &pp.after_subject, &need_8bit_cte, 0);
 
 	for (i = 0; !need_8bit_cte && i < nr; i++) {
-		const char *buf = repo_get_commit_buffer(the_repository,
+		const char *buf = repo_get_commit_buffer(rev->repo,
 							 list[i], NULL);
 		if (has_non_ascii(buf))
 			need_8bit_cte = 1;
-		repo_unuse_commit_buffer(the_repository, list[i], buf);
+		repo_unuse_commit_buffer(rev->repo, list[i], buf);
 	}
 
 	if (!branch_name)
@@ -1410,7 +1410,7 @@ static void make_cover_letter(struct rev_info *rev, int use_separate_file,
 			.other_arg = &other_arg
 		};
 
-		repo_diff_setup(the_repository, &opts);
+		repo_diff_setup(rev->repo, &opts);
 		opts.file = rev->diffopt.file;
 		opts.use_color = rev->diffopt.use_color;
 		diff_setup_done(&opts);
@@ -2429,8 +2429,8 @@ done:
 static int add_pending_commit(const char *arg, struct rev_info *revs, int flags)
 {
 	struct object_id oid;
-	if (repo_get_oid(the_repository, arg, &oid) == 0) {
-		struct commit *commit = lookup_commit_reference(the_repository,
+	if (repo_get_oid(revs->repo, arg, &oid) == 0) {
+		struct commit *commit = lookup_commit_reference(revs->repo,
 								&oid);
 		if (commit) {
 			commit->object.flags |= flags;

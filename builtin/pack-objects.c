@@ -4108,7 +4108,7 @@ static void get_object_list(struct rev_info *revs, int ac, const char **av)
 	setup_revisions(ac, av, revs, &s_r_opt);
 
 	/* make sure shallows are read */
-	is_repository_shallow(the_repository);
+	is_repository_shallow(revs->repo);
 
 	save_warning = warn_on_object_refname_ambiguity;
 	warn_on_object_refname_ambiguity = 0;
@@ -4129,7 +4129,7 @@ static void get_object_list(struct rev_info *revs, int ac, const char **av)
 				struct object_id oid;
 				if (get_oid_hex(line + 10, &oid))
 					die("not an object name '%s'", line + 10);
-				register_shallow(the_repository, &oid);
+				register_shallow(revs->repo, &oid);
 				use_bitmap_index = 0;
 				continue;
 			}
@@ -4145,7 +4145,7 @@ static void get_object_list(struct rev_info *revs, int ac, const char **av)
 		return;
 
 	if (use_delta_islands)
-		load_delta_islands(the_repository, progress);
+		load_delta_islands(revs->repo, progress);
 
 	if (write_bitmap_index)
 		mark_bitmap_preferred_tips();

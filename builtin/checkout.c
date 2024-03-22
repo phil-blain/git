@@ -1093,7 +1093,7 @@ static void suggest_reattach(struct commit *commit, struct rev_info *revs)
 			" git branch <new-branch-name> %s\n\n",
 			/* Give ngettext() the count */
 			lost),
-			repo_find_unique_abbrev(the_repository, &commit->object.oid, DEFAULT_ABBREV));
+			repo_find_unique_abbrev(revs->repo, &commit->object.oid, DEFAULT_ABBREV));
 }
 
 /*

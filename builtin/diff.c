@@ -157,11 +157,11 @@ static void builtin_diff_index(struct rev_info *revs,
 		usage(builtin_diff_usage);
 	if (!(option & DIFF_INDEX_CACHED)) {
 		setup_work_tree();
-		if (repo_read_index_preload(the_repository,
+		if (repo_read_index_preload(revs->repo,
 					    &revs->diffopt.pathspec, 0) < 0) {
 			die_errno("repo_read_index_preload");
 		}
-	} else if (repo_read_index(the_repository) < 0) {
+	} else if (repo_read_index(revs->repo) < 0) {
 		die_errno("repo_read_cache");
 	}
 	run_diff_index(revs, option);
@@ -279,7 +279,7 @@ static void builtin_diff_files(struct rev_info *revs, int argc, const char **arg
 		diff_merges_set_dense_combined_if_unset(revs);
 
 	setup_work_tree();
-	if (repo_read_index_preload(the_repository, &revs->diffopt.pathspec,
+	if (repo_read_index_preload(revs->repo, &revs->diffopt.pathspec,
 				    0) < 0) {
 		die_errno("repo_read_index_preload");
 	}

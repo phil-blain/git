@@ -638,7 +638,7 @@ static void handle_commit(struct commit *commit, struct rev_info *rev,
 	rev->diffopt.output_format = DIFF_FORMAT_CALLBACK;
 
 	parse_commit_or_die(commit);
-	commit_buffer = repo_get_commit_buffer(the_repository, commit, NULL);
+	commit_buffer = repo_get_commit_buffer(rev->repo, commit, NULL);
 	author = strstr(commit_buffer, "\nauthor ");
 	if (!author)
 		die("could not find author in commit %s",
@@ -719,7 +719,7 @@ static void handle_commit(struct commit *commit, struct rev_info *rev,
 			  ? strlen(message) : 0),
 	       reencoded ? reencoded : message ? message : "");
 	free(reencoded);
-	repo_unuse_commit_buffer(the_repository, commit, commit_buffer);
+	repo_unuse_commit_buffer(rev->repo, commit, commit_buffer);
 
 	for (i = 0, p = commit->parents; p; p = p->next) {
 		struct object *obj = &p->item->object;

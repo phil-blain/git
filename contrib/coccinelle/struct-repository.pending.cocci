@@ -1,14 +1,5 @@
 // structs containing a struct repository*
 @@
-identifier f != handle_revision_pseudo_opt;
-identifier p;
-@@
-  f(..., struct rev_info *p, ...) {<...
-- the_repository
-+ p->repo
-  ...>}
-
-@@
 identifier f;
 identifier p;
 @@

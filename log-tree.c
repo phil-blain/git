@@ -253,7 +253,7 @@ static void show_children(struct rev_info *opt, struct commit *commit, int abbre
 	struct commit_list *p = lookup_decoration(&opt->children, &commit->object);
 	for ( ; p; p = p->next) {
 		fprintf(opt->diffopt.file, " %s",
-			repo_find_unique_abbrev(the_repository, &p->item->object.oid, abbrev));
+			repo_find_unique_abbrev(opt->repo, &p->item->object.oid, abbrev));
 	}
 }
 
@@ -447,7 +447,7 @@ void fmt_output_commit(struct strbuf *filename,
 	struct pretty_print_context ctx = {0};
 	struct strbuf subject = STRBUF_INIT;
 
-	repo_format_commit_message(the_repository, commit, "%f", &subject,
+	repo_format_commit_message(info->repo, commit, "%f", &subject,
 				   &ctx);
 	fmt_output_subject(filename, subject.buf, info);
 	strbuf_release(&subject);
@@ -687,7 +687,7 @@ void show_log(struct rev_info *opt)
 
 		if (!opt->graph)
 			put_revision_mark(opt, commit);
-		fputs(repo_find_unique_abbrev(the_repository, &commit->object.oid, abbrev_commit),
+		fputs(repo_find_unique_abbrev(opt->repo, &commit->object.oid, abbrev_commit),
 		      opt->diffopt.file);
 		if (opt->print_parents)
 			show_parents(commit, abbrev_commit, opt->diffopt.file);
@@ -750,7 +750,7 @@ void show_log(struct rev_info *opt)
 
 		if (!opt->graph)
 			put_revision_mark(opt, commit);
-		fputs(repo_find_unique_abbrev(the_repository, &commit->object.oid,
+		fputs(repo_find_unique_abbrev(opt->repo, &commit->object.oid,
 					      abbrev_commit),
 		      opt->diffopt.file);
 		if (opt->print_parents)
@@ -759,7 +759,7 @@ void show_log(struct rev_info *opt)
 			show_children(opt, commit, abbrev_commit);
 		if (parent)
 			fprintf(opt->diffopt.file, " (from %s)",
-			       repo_find_unique_abbrev(the_repository, &parent->object.oid, abbrev_commit));
+			       repo_find_unique_abbrev(opt->repo, &parent->object.oid, abbrev_commit));
 		fputs(diff_get_color_opt(&opt->diffopt, DIFF_RESET), opt->diffopt.file);
 		show_decorations(opt, commit);
 		if (opt->commit_format == CMIT_FMT_ONELINE) {
@@ -890,7 +890,7 @@ void show_log(struct rev_info *opt)
 		 * Pass minimum required diff-options to range-diff; others
 		 * can be added later if deemed desirable.
 		 */
-		repo_diff_setup(the_repository, &opts);
+		repo_diff_setup(opt->repo, &opts);
 		opts.file = opt->diffopt.file;
 		opts.use_color = opt->diffopt.use_color;
 		diff_setup_done(&opts);
@@ -1020,15 +1020,15 @@ static int do_remerge_diff(struct rev_info *opt,
 	struct strbuf parent2_desc = STRBUF_INIT;
 
 	/* Setup merge options */
-	init_merge_options(&o, the_repository);
+	init_merge_options(&o, opt->repo);
 	o.show_rename_progress = 0;
 	o.record_conflict_msgs_as_headers = 1;
 	o.msg_header_prefix = "remerge";
 
 	ctx.abbrev = DEFAULT_ABBREV;
-	repo_format_commit_message(the_repository, parent1, "%h (%s)",
+	repo_format_commit_message(opt->repo, parent1, "%h (%s)",
 				   &parent1_desc, &ctx);
-	repo_format_commit_message(the_repository, parent2, "%h (%s)",
+	repo_format_commit_message(opt->repo, parent2, "%h (%s)",
 				   &parent2_desc, &ctx);
 	o.branch1 = parent1_desc.buf;
 	o.branch2 = parent2_desc.buf;
@@ -1036,7 +1036,7 @@ static int do_remerge_diff(struct rev_info *opt,
 	/* Parse the relevant commits and get the merge bases */
 	parse_commit_or_die(parent1);
 	parse_commit_or_die(parent2);
-	bases = repo_get_merge_bases(the_repository, parent1, parent2);
+	bases = repo_get_merge_bases(opt->repo, parent1, parent2);
 
 	/* Re-merge the parents */
 	merge_incore_recursive(&o, bases, parent1, parent2, &res);

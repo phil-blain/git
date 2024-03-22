@@ -587,17 +587,19 @@ void diff_get_merge_base(const struct rev_info *revs, struct object_id *mb)
 		BUG("unexpected revs->pending.nr: %d", revs->pending.nr);
 
 	for (i = 0; i < revs->pending.nr; i++)
-		mb_child[i] = lookup_commit_reference(the_repository, &revs->pending.objects[i].item->oid);
+		mb_child[i] = lookup_commit_reference(revs->repo,
+						      &revs->pending.objects[i].item->oid);
 	if (revs->pending.nr == 1) {
 		struct object_id oid;
 
-		if (repo_get_oid(the_repository, "HEAD", &oid))
+		if (repo_get_oid(revs->repo, "HEAD", &oid))
 			die(_("unable to get HEAD"));
 
-		mb_child[1] = lookup_commit_reference(the_repository, &oid);
+		mb_child[1] = lookup_commit_reference(revs->repo, &oid);
 	}
 
-	merge_bases = repo_get_merge_bases(the_repository, mb_child[0], mb_child[1]);
+	merge_bases = repo_get_merge_bases(revs->repo, mb_child[0],
+					   mb_child[1]);
 	if (!merge_bases)
 		die(_("no merge base found"));
 	if (merge_bases->next)

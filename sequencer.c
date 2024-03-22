@@ -5641,7 +5641,7 @@ static int make_script_with_merges(struct pretty_print_context *pp,
 		if (!is_empty && (commit->object.flags & PATCHSAME)) {
 			if (flags & TODO_LIST_WARN_SKIPPED_CHERRY_PICKS)
 				warning(_("skipped previously applied commit %s"),
-					short_commit_name(the_repository, commit));
+					short_commit_name(revs->repo, commit));
 			skipped_commit = 1;
 			continue;
 		}
