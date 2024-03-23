@@ -1294,7 +1294,7 @@ static int write_midx_bitmap(const char *midx_name,
 	char *bitmap_name = xstrfmt("%s-%s.bitmap", midx_name,
 					hash_to_hex(midx_hash));
 
-	trace2_region_enter("midx", "write_midx_bitmap", the_repository);
+	trace2_region_enter("midx", "write_midx_bitmap", pdata->repo);
 
 	if (flags & MIDX_WRITE_BITMAP_HASH_CACHE)
 		options |= BITMAP_OPT_HASH_CACHE;
@@ -1342,7 +1342,7 @@ cleanup:
 	free(index);
 	free(bitmap_name);
 
-	trace2_region_leave("midx", "write_midx_bitmap", the_repository);
+	trace2_region_leave("midx", "write_midx_bitmap", pdata->repo);
 
 	return ret;
 }

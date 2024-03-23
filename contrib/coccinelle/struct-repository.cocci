@@ -84,7 +84,7 @@ identifier p;
 identifier f;
 identifier p;
 @@
-  f(..., struct packing_data *p, ...) {<...
+  f(..., struct packing_data *p, ...) {<... when != memset(p, 0, ...)
 - the_repository
 + p->repo
   ...>}
