@@ -1,7 +1,9 @@
 #!/bin/bash
 
+set -x
+
 ref="$1"
 
-allowed_refs=(wip-submodule-rebase-add-sources)
+allowed_refs=(wip-submodule-rebase-add-sources struct-repository-arg)
 
 [[ ${allowed_refs[*]} =~ ${ref} ]] && exit 1 || exit 0
