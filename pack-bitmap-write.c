@@ -494,7 +494,7 @@ int bitmap_writer_build(struct packing_data *to_pack)
 	if (writer.show_progress)
 		writer.progress = start_progress("Building bitmaps", writer.selected_nr);
 	trace2_region_enter("pack-bitmap-write", "building_bitmaps_total",
-			    to_pack->repo);
+			    the_repository);
 
 	old_bitmap = prepare_bitmap_git(to_pack->repo);
 	if (old_bitmap)
@@ -545,8 +545,8 @@ int bitmap_writer_build(struct packing_data *to_pack)
 	free(mapping);
 
 	trace2_region_leave("pack-bitmap-write", "building_bitmaps_total",
-			    to_pack->repo);
-	trace2_data_intmax("pack-bitmap-write", to_pack->repo,
+			    the_repository);
+	trace2_data_intmax("pack-bitmap-write", the_repository,
 			   "building_bitmaps_reused", reused_bitmaps_nr);
 
 	stop_progress(&writer.progress);

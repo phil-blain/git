@@ -1126,10 +1126,10 @@ static void prepare_midx_packing_data(struct packing_data *pdata,
 {
 	uint32_t i;
 
-	trace2_region_enter("midx", "prepare_midx_packing_data", pdata->repo);
+	trace2_region_enter("midx", "prepare_midx_packing_data", the_repository);
 
 	memset(pdata, 0, sizeof(struct packing_data));
-	prepare_packing_data(pdata->repo, pdata);
+	prepare_packing_data(the_repository, pdata);
 
 	for (i = 0; i < ctx->entries_nr; i++) {
 		struct pack_midx_entry *from = &ctx->entries[ctx->pack_order[i]];
@@ -1139,7 +1139,7 @@ static void prepare_midx_packing_data(struct packing_data *pdata,
 			       ctx->info[ctx->pack_perm[from->pack_int_id]].p);
 	}
 
-	trace2_region_leave("midx", "prepare_midx_packing_data", pdata->repo);
+	trace2_region_leave("midx", "prepare_midx_packing_data", the_repository);
 }
 
 static int add_ref_to_pending(const char *refname,
@@ -1294,7 +1294,7 @@ static int write_midx_bitmap(const char *midx_name,
 	char *bitmap_name = xstrfmt("%s-%s.bitmap", midx_name,
 					hash_to_hex(midx_hash));
 
-	trace2_region_enter("midx", "write_midx_bitmap", pdata->repo);
+	trace2_region_enter("midx", "write_midx_bitmap", the_repository);
 
 	if (flags & MIDX_WRITE_BITMAP_HASH_CACHE)
 		options |= BITMAP_OPT_HASH_CACHE;
@@ -1342,7 +1342,7 @@ cleanup:
 	free(index);
 	free(bitmap_name);
 
-	trace2_region_leave("midx", "write_midx_bitmap", pdata->repo);
+	trace2_region_leave("midx", "write_midx_bitmap", the_repository);
 
 	return ret;
 }

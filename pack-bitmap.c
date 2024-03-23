@@ -2430,7 +2430,7 @@ int rebuild_bitmap(const uint32_t *reposition,
 uint32_t *create_bitmap_mapping(struct bitmap_index *bitmap_git,
 				struct packing_data *mapping)
 {
-	struct repository *r = mapping->repo;
+	struct repository *r = the_repository;
 	uint32_t i, num_objects;
 	uint32_t *reposition;
 
