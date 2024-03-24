@@ -4,6 +4,9 @@ set -x
 
 ref="$1"
 
-allowed_refs=(wip-submodule-rebase-add-sources struct-repository-arg)
+allowed_refs=(
+refs/heads/wip-submodule-rebase-add-sources
+refs/heads/struct-repository-arg
+)
 
 [[ ${allowed_refs[*]} =~ ${ref} ]] && exit 1 || exit 0
