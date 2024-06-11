@@ -77,6 +77,10 @@ to specify commits; trees are enough.
 	Pass the merge strategy-specific option through to the merge strategy.
 	See linkgit:git-merge[1] for details.
 
+-X <option>::
+--strategy-option=<option>::
+	document this, added in 6a4c9e7b32c4154345785bd7b8d4afee5fddcead
+
 [[OUTPUT]]
 OUTPUT
 ------
