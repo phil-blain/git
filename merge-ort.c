@@ -1798,7 +1798,7 @@ static int merge_submodule(struct merge_options *opt,
 {
 	struct repository subrepo;
 	struct strbuf sb = STRBUF_INIT;
-	int ret = 0, ret2;
+	int ret = 0, ret2, ret3;
 	struct commit *commit_o, *commit_a, *commit_b;
 	int parent_count;
 	struct object_array merges;
@@ -1846,7 +1846,8 @@ static int merge_submodule(struct merge_options *opt,
 
 	/* check whether both changes are forward */
 	ret2 = repo_in_merge_bases(&subrepo, commit_o, commit_a);
-	if (ret2 < 0) {
+	ret3 = repo_in_merge_bases(&subrepo, commit_o, commit_b);
+	if (ret2 < 0 || ret3 < 0) {
 		path_msg(opt, ERROR_SUBMODULE_CORRUPT, 0,
 			 path, NULL, NULL, NULL,
 			 _("error: failed to merge submodule %s "
@@ -1855,18 +1856,7 @@ static int merge_submodule(struct merge_options *opt,
 		ret = -1;
 		goto cleanup;
 	}
-	if (ret2 > 0)
-		ret2 = repo_in_merge_bases(&subrepo, commit_o, commit_b);
-	if (ret2 < 0) {
-		path_msg(opt, ERROR_SUBMODULE_CORRUPT, 0,
-			 path, NULL, NULL, NULL,
-			 _("error: failed to merge submodule %s "
-			   "(repository corrupt)"),
-			 path);
-		ret = -1;
-		goto cleanup;
-	}
-	if (!ret2) {
+	if (!ret2 || !ret3) {
 		path_msg(opt, CONFLICT_SUBMODULE_MAY_HAVE_REWINDS, 0,
 			 path, NULL, NULL, NULL,
 			 _("Failed to merge submodule %s "
