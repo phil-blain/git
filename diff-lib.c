@@ -209,6 +209,7 @@ void run_diff_files(struct rev_info *revs, unsigned int option)
 			i--;
 
 			if (revs->combine_merges && num_compare_stages == 2) {
+				// TODO: check if we asked for external diff (git difftool) and let user know they should run mergetool instead
 				show_combined_diff(dpath, 2, revs);
 				free(dpath);
 				continue;
