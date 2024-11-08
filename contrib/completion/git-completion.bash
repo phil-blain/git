@@ -1785,7 +1785,15 @@ __git_cherry_pick_inprogress_options=$__git_sequencer_inprogress_options
 
 _git_cherry_pick ()
 {
-	if __git_pseudoref_exists CHERRY_PICK_HEAD; then
+	# if we use 'git commit' instead of 'git cp --continue'
+	# then --continue is not suggested, because CHERRY_PICK_HEAD is removed when committing.
+	# so use $__git_repo_path"/sequencer instead.
+	# TODO: this works but only shows the sequencer options, not the rest (why? return?)
+	# so it does not help when we want to do another cherry-pick during a cherry-pick sequence
+	# is that bad ? not sure...
+	# anyway, should also be done for revert
+	__git_find_repo_path
+        if [ -d "$__git_repo_path"/sequencer ]; then
 		__gitcomp "$__git_cherry_pick_inprogress_options"
 		return
 	fi
