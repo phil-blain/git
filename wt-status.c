@@ -1258,6 +1258,7 @@ static void show_merge_in_progress(struct wt_status *s,
 		if (s->hints)
 			status_printf_ln(s, color,
 				_("  (use \"git commit\" to conclude merge)"));
+		/* the above should suggest "git rebase --continue" when rebasing, or else original authorship is lost */
 	}
 	wt_longstatus_print_trailer(s);
 }
