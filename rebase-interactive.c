@@ -49,7 +49,7 @@ void append_todo_help(int command_count,
 	const char *msg = _("\nCommands:\n"
 "p, pick <commit> = use commit\n"
 "r, reword <commit> = use commit, but edit the commit message\n"
-"e, edit <commit> = use commit, but stop for amending\n"
+"e, edit <commit> = use commit, but stop for amending or splitting\n"
 "s, squash <commit> = use commit, but meld into previous commit\n"
 "f, fixup [-C | -c] <commit> = like \"squash\" but keep only the previous\n"
 "                   commit's log message, unless -C is used, in which case\n"
