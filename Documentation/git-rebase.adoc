@@ -497,10 +497,10 @@ See also INCOMPATIBLE OPTIONS below.
 	split commits (see SPLITTING COMMITS below).
 +
 The commit list format can be changed by setting the configuration option
-rebase.instructionFormat.  A customized instruction format will automatically
+`rebase.instructionFormat`.  A customized instruction format will automatically
 have the commit hash prepended to the format.
 +
-See also INCOMPATIBLE OPTIONS below.
+See also INTERACTIVE MODE and INCOMPATIBLE OPTIONS below.
 
 -r::
 --rebase-merges[=(rebase-cousins|no-rebase-cousins)]::
