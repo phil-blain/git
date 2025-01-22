@@ -994,7 +994,9 @@ add other commits.  This can be used to split a commit into two:
 - Commit the now-current index with whatever commit message is appropriate
   now.
 
-- Repeat the last two steps until your working tree is clean.
+- Repeat the last two steps until your working tree is clean.  To reuse the
+  commit message from the original commit you are splitting, you can use
+  `git commit -c ORIG_HEAD`.
 
 - Continue the rebase with `git rebase --continue`.
 
