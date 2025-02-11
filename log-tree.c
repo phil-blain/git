@@ -1051,6 +1051,7 @@ static int do_remerge_diff(struct rev_info *opt,
 	}
 
 	/* Setup merge options */
+	/* here, we should be able to specify additionnal merge strategy options (eg. subtree) */
 	init_ui_merge_options(&o, the_repository);
 	o.show_rename_progress = 0;
 	o.record_conflict_msgs_as_headers = 1;
