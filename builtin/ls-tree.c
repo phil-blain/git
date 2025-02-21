@@ -418,6 +418,8 @@ int cmd_ls_tree(int argc,
 		       ~(PATHSPEC_FROMTOP | PATHSPEC_LITERAL),
 		       PATHSPEC_PREFER_CWD,
 		       prefix, argv + 1);
+	// TODO: make this command work (just like ls-files)
+	// git ls-tree -r '*/submodule*'
 	for (i = 0; i < options.pathspec.nr; i++)
 		options.pathspec.items[i].nowildcard_len = options.pathspec.items[i].len;
 	options.pathspec.has_wildcard = 0;
