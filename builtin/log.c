@@ -2468,7 +2468,6 @@ int cmd_format_patch(int argc,
 	base = get_base_commit(&cfg, list, nr);
 	if (base) {
 		reset_revision_walk(&rev);
-		repo_clear_object_flags(rev.repo, UNINTERESTING);
 		prepare_bases(&bases, base, list, nr);
 	}
 
