@@ -577,7 +577,7 @@ static int prepare_revs(struct bisect_terms *terms, struct rev_info *revs)
 	 * as the previous call to bisect_next_all() in turn
 	 * sets up a revision walk.
 	 */
-	reset_revision_walk();
+	repo_reset_revision_walk(the_repository);
 	repo_init_revisions(the_repository, revs, NULL);
 	setup_revisions(0, NULL, revs, NULL);
 	refs_for_each_glob_ref_in(get_main_ref_store(the_repository),
@@ -627,7 +627,7 @@ static int bisect_skipped_commits(struct bisect_terms *terms)
 	 * Reset the flags used by revision walks in case
 	 * there is another revision walk after this one.
 	 */
-	reset_revision_walk();
+	reset_revision_walk(&revs);
 
 	strbuf_release(&commit_name);
 	release_revisions(&revs);
@@ -1116,7 +1116,7 @@ static enum bisect_error bisect_skip(struct bisect_terms *terms, int argc,
 				strvec_push(&argv_state,
 						oid_to_hex(&commit->object.oid));
 
-			reset_revision_walk();
+			reset_revision_walk(&revs);
 			release_revisions(&revs);
 		} else {
 			strvec_push(&argv_state, argv[i]);
