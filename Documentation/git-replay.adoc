@@ -42,12 +42,21 @@ When `--advance` is specified, the update-ref command(s) in the output
 will update the branch passed as an argument to `--advance` to point at
 the new commits (in other words, this mimics a cherry-pick operation).
 
+--contained::
+	Update only the named tips, or all branches pointing in to the
+	revision range.
+
 <revision-range>::
 	Range of commits to replay. More than one <revision-range> can
 	be passed, but in `--advance <branch>` mode, they should have
 	a single tip, so that it's clear where <branch> should point
 	to. See "Specifying Ranges" in linkgit:git-rev-parse[1] and the
 	"Commit Limiting" options below.
++
+Note that in `--onto` mode (without `--contained`), when including `HEAD`
+in the revision range, the updated branch will be the currently checked out
+branch. To update a different branch, include it specifically in the revision
+range.
 
 include::rev-list-options.adoc[]
 
