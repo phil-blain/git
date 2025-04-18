@@ -71,7 +71,7 @@ case "$jobname" in
 	group Build make
 	if test -n "$run_tests"
 	then
-		group "Run tests" make test ||
+		group "Run tests" make -C t/perf p5332-multi-pack-reuse.sh ||
 		handle_failed_tests
 	fi
 	;;
