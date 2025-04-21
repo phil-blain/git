@@ -59,7 +59,7 @@ rm -f "$perf_results_dir"/$(basename "$0" .sh).subtests
 
 die_if_build_dir_not_repo () {
 	if ! ( cd "$TEST_DIRECTORY/.." &&
-		    git rev-parse --build-dir >/dev/null 2>&1 ); then
+		    git rev-parse --build-dir ); then
 		error "No $1 defined, and your build directory is not a repo"
 	fi
 }
