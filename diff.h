@@ -444,6 +444,7 @@ struct diffstat_t {
 		unsigned is_unmerged:1;
 		unsigned is_binary:1;
 		unsigned is_renamed:1;
+		unsigned is_copied:1;
 		unsigned is_interesting:1;
 		uintmax_t added, deleted;
 	} **files;
