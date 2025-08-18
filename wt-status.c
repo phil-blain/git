@@ -1021,6 +1021,7 @@ static void wt_longstatus_print_submodule_summary(struct wt_status *s, int uncom
 	strvec_pushf(&sm_summary.args, "%d", s->submodule_summary);
 	if (!uncommitted)
 		strvec_push(&sm_summary.args, s->amend ? "HEAD^" : "HEAD");
+	// TODO: pass s->pathspec here somehow (need to "un-parse" it)
 
 	sm_summary.git_cmd = 1;
 	sm_summary.no_stdin = 1;
