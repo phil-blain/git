@@ -2052,6 +2052,8 @@ static enum get_oid_result get_oid_with_context_1(struct repository *repo,
 			cb.list = &list;
 			refs_for_each_ref(get_main_ref_store(repo), handle_one_ref, &cb);
 			refs_head_ref(get_main_ref_store(repo), handle_one_ref, &cb);
+			// TODO: find a way to set revision_sources to the ref where the commit was found
+			// might be able to add a field to object_context for this purpose
 			ret = get_oid_oneline(repo, name + 2, oid, list);
 
 			free_commit_list(list);
