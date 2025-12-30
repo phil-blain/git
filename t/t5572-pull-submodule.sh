@@ -145,9 +145,9 @@ test_expect_success 'pull --rebase --recurse-submodules (remote superproject sub
 	git -C parent commit -m "update submodule" &&
 
 	# also have local commits
-	test_commit -C super/sub local_stuff &&
+	test_commit -C super/sub local_stuff rebase_strategy.t rebase_strategy2 &&
 
-	git -C super pull --rebase --recurse-submodules &&
+	git -C super -c submodule.recurse=true pull --rebase --recurse-submodules &&
 	test_path_is_file super/sub/rebase_strategy.t &&
 	test_path_is_file super/sub/local_stuff.t
 '
