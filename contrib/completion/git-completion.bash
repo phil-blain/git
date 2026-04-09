@@ -2250,7 +2250,10 @@ __git_complete_log_opts ()
 	COMPREPLY=()
 
 	local merge=""
-	if __git_pseudoref_exists MERGE_HEAD; then
+	if __git_pseudoref_exists MERGE_HEAD -o
+	   __git_pseudoref_exists REBASE_HEAD -o
+	   __git_pseudoref_exists CHERRY_PICK_HEAD -o
+	   __git_pseudoref_exists REVERT_HEAD; then
 		merge="--merge"
 	fi
 	case "$prev,$cur" in
