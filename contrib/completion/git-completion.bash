@@ -1793,7 +1793,7 @@ _git_cherry_pick ()
 	# is that bad ? not sure...
 	# anyway, should also be done for revert
 	__git_find_repo_path
-        if [ -d "$__git_repo_path"/sequencer ]; then
+	if [ -d "$__git_repo_path"/sequencer ]; then
 		__gitcomp "$__git_cherry_pick_inprogress_options"
 		return
 	fi
