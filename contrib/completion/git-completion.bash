@@ -2300,9 +2300,9 @@ __git_complete_log_opts ()
 		return
 		;;
 	--diff-merges=*)
-                __gitcomp "$__git_diff_merges_opts" "" "${cur##--diff-merges=}"
-                return
-                ;;
+		__gitcomp "$__git_diff_merges_opts" "" "${cur##--diff-merges=}"
+		return
+		;;
 	--*)
 		__gitcomp "
 			$__git_log_common_options
@@ -2355,7 +2355,7 @@ _git_log ()
 	__git_find_repo_path
 
 	__git_complete_log_opts
-        [ ${#COMPREPLY[@]} -eq 0 ] || return
+	[ ${#COMPREPLY[@]} -eq 0 ] || return
 
 	__git_complete_revlist
 }
@@ -3282,9 +3282,9 @@ _git_show ()
 		return
 		;;
 	--diff-merges=*)
-                __gitcomp "$__git_diff_merges_opts" "" "${cur##--diff-merges=}"
-                return
-                ;;
+		__gitcomp "$__git_diff_merges_opts" "" "${cur##--diff-merges=}"
+		return
+		;;
 	--*)
 		__gitcomp "--pretty= --format= --abbrev-commit --no-abbrev-commit
 			--oneline --show-signature
