@@ -549,6 +549,7 @@ enum conflict_and_info_types {
 
 	/* Special submodule cases broken out from FAILED_TO_MERGE */
 	CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLE_RESOLUTION,
+	CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_INCLUDED,
 	CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED,
 	CONFLICT_SUBMODULE_NOT_INITIALIZED,
 	CONFLICT_SUBMODULE_HISTORY_NOT_AVAILABLE,
@@ -618,6 +619,8 @@ static const char *type_short_descriptions[] = {
 	/*** Special submodule cases broken out from FAILED_TO_MERGE ***/
 	[CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLE_RESOLUTION] =
 		"CONFLICT (submodule with possible resolution)",
+	[CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_INCLUDED] =
+		"CONFLICT (submodule rebased and reachable from HEAD)",
 	[CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED] =
 		"CONFLICT (submodule may have been rebased)",
 	[CONFLICT_SUBMODULE_NOT_INITIALIZED] =
@@ -1802,6 +1805,7 @@ static int find_first_merges(struct repository *repo,
 
 static int find_rebased_commits(struct repository *repo,
 				struct commit *b,
+				int from_head,
 				struct object_array *rebased_commits)
 {
 	struct strbuf sb = STRBUF_INIT;
@@ -1815,8 +1819,11 @@ static int find_rebased_commits(struct repository *repo,
 	// here, check for the number of parents of b and add --min-parents=n --max-parents=n
 	// this ensure that we find a normal commit if b is a normal commit, etc.
 	// it should reduce the number of false hits
-	strvec_pushl(&rev_args, "rev-list", "--all", "--grep", sb.buf,
-				"--not", oid_to_hex(&b->object.oid), NULL);
+	if (from_head)
+		strvec_pushl(&rev_args, "rev-list", "--grep", sb.buf, "HEAD", NULL);
+	else
+		strvec_pushl(&rev_args, "rev-list", "--all", "--grep", sb.buf,
+			     "--not", oid_to_hex(&b->object.oid), "HEAD", NULL);
 
 	memset(rebased_commits, 0, sizeof(struct object_array));
 	memset(&rev_opts, 0, sizeof(rev_opts));
@@ -1851,8 +1858,8 @@ static int merge_submodule(struct merge_options *opt,
 	struct strbuf sb = STRBUF_INIT;
 	int ret = 0, ret2, ret3;
 	struct commit *commit_o, *commit_a, *commit_b;
-	int parent_count, rebased_count;
-	struct object_array merges, rebased;
+	int parent_count, rebased_count_all, rebased_count_head;
+	struct object_array merges, rebased_all, rebased_head;
 
 	int i;
 	int search = !opt->priv->call_depth;
@@ -1908,19 +1915,34 @@ static int merge_submodule(struct merge_options *opt,
 		goto cleanup;
 	}
 	if (!ret2) {
-		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased);
+		rebased_count_all = find_rebased_commits(&subrepo, commit_b, 0, &rebased_all);
+		rebased_count_head = find_rebased_commits(&subrepo, commit_b, 1, &rebased_head);
 		/* if side 2 is forward but side 1 is not, we are potentially rebasing */
-		if (ret3  && rebased_count > 0) {
-			for (i = 0; i < rebased.nr; i++)
-					format_commit(&sb, 4, &subrepo,
-						      (struct commit *)rebased.objects[i].item);
-			path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED, 0,
-					path, NULL, NULL, NULL,
-					_("Failed to merge submodule %s, but multiple "
-					"rebased versions exist:\n%s"), path, sb.buf);
-			strbuf_release(&sb);
-			object_array_clear(&rebased);
-			goto cleanup;
+		if (ret3) {
+			if (rebased_count_head > 0) {
+				for (i = 0; i < rebased_head.nr; i++)
+						format_commit(&sb, 4, &subrepo,
+							      (struct commit *)rebased_head.objects[i].item);
+				path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_INCLUDED, 0,
+						path, NULL, NULL, NULL,
+						_("Failed to merge submodule %s, but a rebased "
+						"version is already reachable from HEAD:\n%s"), path, sb.buf);
+				strbuf_release(&sb);
+				object_array_clear(&rebased_head);
+				goto cleanup;
+			}
+			if (rebased_count_all > 0) {
+				for (i = 0; i < rebased_all.nr; i++)
+						format_commit(&sb, 4, &subrepo,
+							      (struct commit *)rebased_all.objects[i].item);
+				path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED, 0,
+						path, NULL, NULL, NULL,
+						_("Failed to merge submodule %s, but multiple "
+						"rebased versions exist:\n%s"), path, sb.buf);
+				strbuf_release(&sb);
+				object_array_clear(&rebased_all);
+				goto cleanup;
+			}
 		} else {
 			path_msg(opt, CONFLICT_SUBMODULE_MAY_HAVE_REWINDS, 0,
 				 path, NULL, NULL, NULL,
@@ -2004,17 +2026,17 @@ static int merge_submodule(struct merge_options *opt,
 		/* commit_a might be the first commit of a submodule branch which was rebased,
 		 * and we are rebasing a superproject branch that ....
 		 */
-		rebased_count = find_rebased_commits(&subrepo, commit_b, &rebased);
-			if (rebased_count > 0) {
-				for (i = 0; i < rebased.nr; i++)
+		rebased_count_all = find_rebased_commits(&subrepo, commit_b, 0, &rebased_all);
+			if (rebased_count_all > 0) {
+				for (i = 0; i < rebased_all.nr; i++)
 					format_commit(&sb, 4, &subrepo,
-						      (struct commit *)rebased.objects[i].item);
+						      (struct commit *)rebased_all.objects[i].item);
 				path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE_BUT_POSSIBLY_REBASED, 0,
 					 path, NULL, NULL, NULL,
 					 _("Failed to merge submodule %s, but multiple "
 					   "rebased versions exist:\n%s"), path, sb.buf);
 				strbuf_release(&sb);
-				object_array_clear(&rebased);
+				object_array_clear(&rebased_all);
 			} else {
 				path_msg(opt, CONFLICT_SUBMODULE_FAILED_TO_MERGE, 0,
 					path, NULL, NULL, NULL,
