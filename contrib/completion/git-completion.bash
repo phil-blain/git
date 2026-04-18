@@ -2200,7 +2200,7 @@ _git_ls_tree ()
 # Options that go well for log, shortlog and gitk
 __git_log_common_options="
 	--not --all
-	--branches --tags --remotes
+	--branches --tags --remotes --remotes=
 	--first-parent --merges --no-merges
 	--max-count=
 	--max-age= --since= --after=
@@ -2301,6 +2301,10 @@ __git_complete_log_opts ()
 		;;
 	--diff-merges=*)
 		__gitcomp "$__git_diff_merges_opts" "" "${cur##--diff-merges=}"
+		return
+		;;
+	--remotes=*)
+		__gitcomp_nl "$(__git_remotes)" "" "${cur##--remotes=}"
 		return
 		;;
 	--*)
